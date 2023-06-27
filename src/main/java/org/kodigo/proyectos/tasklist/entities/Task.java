@@ -25,8 +25,14 @@ public class Task {
   private String name;
   private String description;
   private Relevance relevance;
+
+  @Column(name = "completed_date")
   private LocalDate completedDate;
+
+  @Column(name = "due_date")
   private LocalDate dueDate;
+
+  @Column(name = "specified_time")
   private LocalTime specifiedTime;
 
   public Task(
