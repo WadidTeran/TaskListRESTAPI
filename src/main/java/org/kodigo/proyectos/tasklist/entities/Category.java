@@ -10,22 +10,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "users")
+@Table(name = "categories")
 @Data
 @NoArgsConstructor
-public class User {
+public class Category {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "user_id")
-  private Long userId;
+  @Column(name = "category_id")
+  private Long categoryId;
 
-  private String username;
-  private String email;
-  private String password;
+  private String name;
 
-  public User(String username, String email, String password) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
+  public Category(String name) {
+    this.name = name;
   }
 }
