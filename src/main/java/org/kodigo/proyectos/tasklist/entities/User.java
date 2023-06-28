@@ -36,6 +36,10 @@ public class User {
   @OneToMany(mappedBy = "user")
   private List<Category> categories;
 
+  @JsonIgnoreProperties(value = "user")
+  @OneToMany(mappedBy = "user")
+  private List<Task> tasks;
+
   public User(String username, String email, String password) {
     this.username = username;
     this.email = email;

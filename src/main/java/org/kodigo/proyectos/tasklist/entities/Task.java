@@ -29,6 +29,11 @@ public class Task {
   @Column(name = "task_id")
   private Long taskId;
 
+  @JsonIgnoreProperties(value = "tasks")
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
+
   @Column(nullable = false)
   private String name;
 
