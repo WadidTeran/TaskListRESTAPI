@@ -19,6 +19,7 @@ public class Category {
   @Column(name = "category_id")
   private Long categoryId;
 
+  @Column(unique = true, nullable = false)
   private String name;
 
   public Category(String name) {
