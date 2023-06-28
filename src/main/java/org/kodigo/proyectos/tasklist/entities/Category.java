@@ -6,8 +6,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,6 +27,11 @@ public class Category {
 
   @Column(unique = true, nullable = false)
   private String name;
+
+  @JsonIgnoreProperties(value = "categories")
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
   @JsonIgnoreProperties(value = "category")
   @OneToMany(mappedBy = "category")

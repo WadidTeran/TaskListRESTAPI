@@ -1,13 +1,17 @@
 package org.kodigo.proyectos.tasklist.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
+import jakarta.persistence.OneToMany;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -27,6 +31,10 @@ public class User {
 
   @Column(nullable = false)
   private String password;
+
+  @JsonIgnoreProperties(value = "user")
+  @OneToMany(mappedBy = "user")
+  private List<Category> categories;
 
   public User(String username, String email, String password) {
     this.username = username;
