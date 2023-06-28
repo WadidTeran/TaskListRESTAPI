@@ -1,5 +1,6 @@
 package org.kodigo.proyectos.tasklist.repositories;
 
+import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.Relevance;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.User;
@@ -62,4 +63,77 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
           User user,
           LocalDate completedDate,
           Relevance relevance); // COMPLETED ON AN EXACT DATE WITH RELEVANCE
+
+  List<Task> findByUserAndCompletedDateIsNullAndCategoryOrderByDueDate(
+      User user, Category category); // ALL PENDING WITH CATEGORY
+
+  List<Task> findByUserAndCompletedDateIsNotNullAndCategoryOrderByCompletedDateDesc(
+      User user, Category category); // ALL COMPLETED WITH CATEGORY
+
+  List<Task> findByUserAndDueDateAfterAndCompletedDateIsNullAndCategoryOrderByDueDate(
+      User user, LocalDate dueDate, Category category); // FUTURE PENDING WITH CATEGORY
+
+  List<Task> findByUserAndDueDateBeforeAndCompletedDateIsNullAndCategoryOrderByDueDate(
+      User user, LocalDate dueDate, Category category); // PREVIOUS PENDING WITH CATEGORY
+
+  List<Task> findByUserAndDueDateEqualsAndCompletedDateIsNullAndCategoryOrderByDueDate(
+      User user, LocalDate dueDate, Category category); // PENDING FOR AN EXACT DATE WITH CATEGORY
+
+  List<Task>
+      findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullAndCategoryOrderByCompletedDateDesc(
+          User user,
+          LocalDate completedDate,
+          Category category); // PREVIOUS COMPLETED WITH CATEGORY
+
+  List<Task>
+      findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndCategoryOrderByCompletedDateDesc(
+          User user,
+          LocalDate completedDate,
+          Category category); // COMPLETED ON AN EXACT DATE WITH CATEGORY
+
+  List<Task> findByUserAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
+      User user,
+      Relevance relevance,
+      Category category); // ALL PENDING WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
+          User user,
+          Relevance relevance,
+          Category category); // ALL COMPLETED WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndDueDateAfterAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
+          User user,
+          LocalDate dueDate,
+          Relevance relevance,
+          Category category); // FUTURE PENDING WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndDueDateBeforeAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
+          User user,
+          LocalDate dueDate,
+          Relevance relevance,
+          Category category); // PREVIOUS PENDING WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndDueDateEqualsAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
+          User user,
+          LocalDate dueDate,
+          Relevance relevance,
+          Category category); // PENDING FOR AN EXACT DATE WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
+          User user,
+          LocalDate completedDate,
+          Relevance relevance,
+          Category category); // PREVIOUS COMPLETED WITH RELEVANCE WITH CATEGORY
+
+  List<Task>
+      findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
+          User user,
+          LocalDate completedDate,
+          Relevance relevance,
+          Category category); // COMPLETED ON AN EXACT DATE WITH RELEVANCE WITH CATEGORY
 }

@@ -25,7 +25,7 @@ public class Category {
   @Column(name = "category_id")
   private Long categoryId;
 
-  @Column(unique = true, nullable = false)
+  @Column(nullable = false)
   private String name;
 
   @JsonIgnoreProperties(value = "categories")
