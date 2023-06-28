@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.FetchType;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,16 +34,33 @@ public class User {
   private String password;
 
   @JsonIgnoreProperties(value = "user")
-  @OneToMany(mappedBy = "user")
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
   private List<Category> categories;
 
   @JsonIgnoreProperties(value = "user")
-  @OneToMany(mappedBy = "user")
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
   private List<Task> tasks;
 
   public User(String username, String email, String password) {
     this.username = username;
     this.email = email;
     this.password = password;
+  }
+
+  @Override
+  public String toString() {
+    return "User{"
+        + "userId="
+        + userId
+        + ", username='"
+        + username
+        + '\''
+        + ", email='"
+        + email
+        + '\''
+        + ", password='"
+        + password
+        + '\''
+        + '}';
   }
 }
