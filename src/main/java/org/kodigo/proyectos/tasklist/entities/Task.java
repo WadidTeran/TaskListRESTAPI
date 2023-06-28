@@ -1,5 +1,6 @@
 package org.kodigo.proyectos.tasklist.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -11,6 +12,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -27,8 +29,15 @@ public class Task {
   @Column(name = "task_id")
   private Long taskId;
 
+  @Column(nullable = false)
   private String name;
+
   private String description;
+
+  @JsonIgnoreProperties(value = "tasks")
+  @ManyToOne
+  @JoinColumn(name = "category_id")
+  private Category category;
 
   @Enumerated(EnumType.STRING)
   private Relevance relevance;
@@ -49,12 +58,14 @@ public class Task {
   public Task(
       String name,
       String description,
+      Category category,
       Relevance relevance,
       LocalDate dueDate,
       LocalTime specifiedTime,
       RepeatConfig repeatConfig) {
     this.name = name;
     this.description = description;
+    this.category = category;
     this.relevance = relevance;
     this.dueDate = dueDate;
     this.specifiedTime = specifiedTime;

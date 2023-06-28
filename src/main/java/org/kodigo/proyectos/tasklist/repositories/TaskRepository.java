@@ -7,9 +7,12 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
+  Optional<Task> findByName(String name);
+
   List<Task> findByCompletedDateIsNullOrderByDueDateDesc(); // ALL PENDING
 
   List<Task> findByCompletedDateIsNotNullOrderByCompletedDateDesc(); // ALL COMPLETED
