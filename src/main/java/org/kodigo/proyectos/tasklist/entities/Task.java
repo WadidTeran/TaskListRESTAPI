@@ -61,6 +61,7 @@ public class Task {
   private RepeatConfig repeatConfig;
 
   public Task(
+      User user,
       String name,
       String description,
       Category category,
@@ -68,6 +69,7 @@ public class Task {
       LocalDate dueDate,
       LocalTime specifiedTime,
       RepeatConfig repeatConfig) {
+    this.user = user;
     this.name = name;
     this.description = description;
     this.category = category;

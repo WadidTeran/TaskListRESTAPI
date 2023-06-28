@@ -37,7 +37,8 @@ public class Category {
   @OneToMany(mappedBy = "category")
   private List<Task> tasks;
 
-  public Category(String name) {
+  public Category(String name, User user) {
     this.name = name;
+    this.user = user;
   }
 }
