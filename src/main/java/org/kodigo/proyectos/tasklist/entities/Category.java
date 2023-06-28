@@ -30,7 +30,7 @@ public class Category {
 
   @JsonIgnoreProperties(value = "categories")
   @ManyToOne
-  @JoinColumn(name = "user_id")
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @JsonIgnoreProperties(value = "category")
