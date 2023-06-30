@@ -20,5 +20,4 @@ public class ExternalUtilityMethods {
     }
     return tasksByRelevance;
   }
-
 }
