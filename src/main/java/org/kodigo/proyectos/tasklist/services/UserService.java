@@ -24,8 +24,6 @@ public class UserService {
 
   public boolean modifyUser(User user) {
     if (userRepository.existsById(user.getUserId())) {
-      user.setUsername(user.getUsername());
-      user.setEmail(user.getEmail());
       userRepository.save(user);
       return true;
     } else {

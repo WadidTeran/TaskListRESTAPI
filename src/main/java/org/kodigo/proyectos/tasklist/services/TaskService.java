@@ -1,9 +1,7 @@
 package org.kodigo.proyectos.tasklist.services;
 
-import org.kodigo.proyectos.tasklist.entities.Category;
-import org.kodigo.proyectos.tasklist.entities.Relevance;
-import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.User;
+import org.kodigo.proyectos.tasklist.dtos.TaskDTO;
+import org.kodigo.proyectos.tasklist.entities.*;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
@@ -20,48 +18,31 @@ public class TaskService {
   @Autowired private UserRepository userRepository;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(Task task) {
-
-    try {
-      task.setUser(userRepository.findById(task.getUser().getUserId()).get());
-      if (task.getCategory() != null) {
-        task.setCategory(categoryRepository.findById(task.getTaskId()).get());
-      }
-      if (task.getRepeatConfig() != null) {
-        task.setRepeatConfig(taskRepository.findById(task.getTaskId()).get().getRepeatConfig());
-      }
+  public boolean createTask(TaskDTO taskDTO) {
+    if (validateTaskDTO(taskDTO)) {
+      Task task = convertToTask(taskDTO);
       taskRepository.save(task);
       return true;
-    } catch (Exception ex) {
-      System.err.println(ex);
-      return false;
     }
+    return false;
   }
 
-  public boolean modifyTask(Task task) {
-    try {
-      if (task.getCategory() != null) {
-        task.setCategory(categoryRepository.findById(task.getCategory().getCategoryId()).get());
-      }
-      if (task.getRepeatConfig() != null) {
-        task.setRepeatConfig(taskRepository.findById(task.getTaskId()).get().getRepeatConfig());
-      }
+  public boolean modifyTask(TaskDTO taskDTO) {
+    if (validateTaskDTO(taskDTO)) {
+      Task task = convertToTask(taskDTO);
+      task.setTaskId(taskDTO.getTaskDTOId());
       taskRepository.save(task);
       return true;
-    } catch (Exception ex) {
-      System.err.println(ex);
-      return false;
     }
+    return false;
   }
 
-  public boolean deleteTaskById(Long id) {
-    Optional<Task> optionalTask = taskRepository.findById(id);
-    if (optionalTask.isPresent()) {
-      taskRepository.deleteById(id);
+  public boolean deleteTask(Task task) {
+    if (taskRepository.existsById(task.getTaskId())) {
+      taskRepository.deleteById(task.getTaskId());
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   public Optional<Task> getTasksByName(User user, String nameTask) {
@@ -238,5 +219,55 @@ public class TaskService {
     return taskRepository
         .findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
             user, completedDate, relevance, category);
+  }
+
+  private Task convertToTask(TaskDTO taskDTO) {
+
+    Task task = new Task();
+    if (taskDTO.getName() != null) {
+      task.setName(taskDTO.getName());
+    }
+
+    task.setUser(userRepository.findById(taskDTO.getUserId()).orElseThrow());
+    if (taskDTO.getCategoryId() != null) {
+      task.setCategory(categoryRepository.findById(taskDTO.getCategoryId()).orElseThrow());
+    }
+    if (taskDTO.getDescription() != null) {
+      task.setDescription(taskDTO.getDescription());
+    }
+    if (taskDTO.getDueDate() != null) {
+      task.setDueDate(taskDTO.getDueDate());
+    }
+    if (taskDTO.getSpecifiedTime() != null) {
+      task.setSpecifiedTime(taskDTO.getSpecifiedTime());
+    }
+    if (taskDTO.getRepeatConfig() != null) {
+      task.setRepeatConfig(taskDTO.getRepeatConfig());
+    }
+
+    if (taskDTO.getRelevance() != null) {
+      task.setRelevance(taskDTO.getRelevance());
+    }
+
+    return task;
+  }
+
+  private boolean validateTaskDTO(TaskDTO taskDTO) {
+    String dtoName = taskDTO.getName();
+    Long dtoUserId = taskDTO.getUserId();
+    Long dtoCategoryId = taskDTO.getCategoryId();
+    RepeatConfig dtoRepeatConfig = taskDTO.getRepeatConfig();
+    return !(dtoUserId == null
+        || !userRepository.existsById(dtoUserId)
+        || dtoName == null
+        || dtoName.isEmpty()
+        || dtoName.isBlank()
+        || (dtoCategoryId != null && !categoryRepository.existsById(dtoCategoryId))
+        || (dtoRepeatConfig != null
+            && (taskDTO.getDueDate() == null
+                || dtoRepeatConfig.getRepeatInterval() == null
+                || dtoRepeatConfig.getRepeatType() == null
+                || (dtoRepeatConfig.getRepeatType() == RepeatType.HOUR
+                    && taskDTO.getSpecifiedTime() == null))));
   }
 }
