@@ -3,7 +3,6 @@ package org.kodigo.proyectos.tasklist.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
-import org.kodigo.proyectos.tasklist.dtos.UserDTO;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.User;
 import org.kodigo.proyectos.tasklist.services.TaskService;
@@ -27,14 +26,14 @@ public class TaskController {
   @Operation(summary = "Gets a list of tasks according to query params")
   @GetMapping
   public ResponseEntity<List<Task>> getTaskList(
-      @RequestBody UserDTO userDTO,
+      @RequestBody User user,
       @Parameter(description = "Task status query param: {completed, pending}") @RequestParam
           String status) {
-    if (userService.validateUser(userDTO)) {
-      User user =
-          (userDTO.getEmail() != null)
-              ? userService.getUserByEmail(userDTO.getEmail()).orElseThrow()
-              : userService.getUserByUsername(userDTO.getUsername()).orElseThrow();
+    if (userService.validateUser(user)) {
+      User userDB =
+          (user.getEmail() != null)
+              ? userService.getUserByEmail(user.getEmail()).orElseThrow()
+              : userService.getUserByUsername(user.getUsername()).orElseThrow();
 
       List<Task> tasks;
       if (!status.equals("completed") && !status.equals("pending")) {
@@ -43,8 +42,8 @@ public class TaskController {
       }
       tasks =
           (status.equals("completed"))
-              ? taskService.getAllCompletedTasks(user)
-              : taskService.getAllPendingTasks(user);
+              ? taskService.getAllCompletedTasks(userDB)
+              : taskService.getAllPendingTasks(userDB);
       return tasks.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(tasks);
     }
     return ResponseEntity.badRequest().build();
