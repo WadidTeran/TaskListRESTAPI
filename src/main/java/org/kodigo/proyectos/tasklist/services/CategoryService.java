@@ -20,7 +20,7 @@ public class CategoryService {
   @Autowired private UserRepository userRepository;
 
   public boolean createCategory(User user, Category category) {
-    if (!existCategory(user, category.getName())
+    if (notExistCategory(user, category.getName())
         && category.getName() != null
         && !category.getName().isBlank()
         && !category.getName().isEmpty()) {
@@ -77,8 +77,8 @@ public class CategoryService {
     return categoryRepository.findByUser(user);
   }
 
-  public boolean existCategory(User user, String categoryName) {
+  public boolean notExistCategory(User user, String categoryName) {
     Optional<Category> optionalCategory = categoryRepository.findByUserAndName(user, categoryName);
-    return optionalCategory.isPresent();
+    return optionalCategory.isEmpty();
   }
 }

@@ -311,7 +311,7 @@ public class TaskService {
             && !rel.equals(Relevance.LOW.value)
             && !rel.equals(Relevance.MEDIUM.value)
             && !rel.equals(Relevance.HIGH.value))
-        || (category != null && !categoryService.existCategory(user, category))
+        || (category != null && categoryService.notExistCategory(user, category))
         || (status.equals(ParamStrings.COMPLETED.toString()))
             && due != null
             && due.equals(ParamStrings.FUTURE.value));
