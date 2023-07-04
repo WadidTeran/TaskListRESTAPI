@@ -1,6 +1,6 @@
 package org.kodigo.proyectos.tasklist.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -33,11 +33,11 @@ public class User {
   @Column(nullable = false)
   private String password;
 
-  @JsonIgnoreProperties(value = "user")
+  @JsonIgnore
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
   private List<Category> categories;
 
-  @JsonIgnoreProperties(value = "user")
+  @JsonIgnore
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
   private List<Task> tasks;
 
