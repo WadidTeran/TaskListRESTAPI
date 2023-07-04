@@ -1,6 +1,5 @@
 package org.kodigo.proyectos.tasklist.services;
 
-import org.kodigo.proyectos.tasklist.dtos.UserDTO;
 import org.kodigo.proyectos.tasklist.entities.User;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,14 +51,13 @@ public class UserService {
     return userRepository.findByEmail(email);
   }
 
-  public boolean validateUser(UserDTO userDTO) {
-    Long userId = userDTO.getUserId();
-    Optional<User> optUser = userRepository.findById(userId);
+  public boolean validateUser(User userToValidate) {
+    Optional<User> optUser = userRepository.findById(userToValidate.getUserId());
     if (optUser.isPresent()) {
       User user = optUser.get();
-      return (user.getEmail().equals(userDTO.getEmail())
-              || user.getUsername().equals(userDTO.getUsername()))
-          && user.getPassword().equals(userDTO.getPassword());
+      return (user.getEmail().equals(userToValidate.getEmail())
+              || user.getUsername().equals(userToValidate.getUsername()))
+          && user.getPassword().equals(userToValidate.getPassword());
     }
     return false;
   }
