@@ -54,9 +54,12 @@ public class ProductivityEmailService {
           "Productivity email",
           "Hi, here is your productivity report :)",
           reportDocument.getNameDocument(),
-          tasks.get(0).getUser().getEmail());
+          user.getEmail());
     } else {
-      // TODO: Send an email indicating that there are no completed tasks in the range provided.
+      emailSenderService.sendEmail(
+          "Productivity email",
+          "You don't have any completed tasks in the provided range",
+          user.getEmail());
     }
   }
 
