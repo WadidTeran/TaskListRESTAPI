@@ -13,10 +13,10 @@ import java.io.File;
 @Service
 public class EmailSenderService {
 
-  @Autowired private JavaMailSender javaMailSender;
   private final String senderEmail;
   private final MimeMessageHelper mimeMessageHelper;
   private final MimeMessage message;
+  @Autowired private JavaMailSender javaMailSender;
 
   public EmailSenderService() throws MessagingException {
     this.senderEmail = "listtaskapp@gmail.com";

@@ -1,4 +1,4 @@
-package org.kodigo.proyectos.tasklist.utils;
+package org.kodigo.proyectos.tasklist.dtos;
 
 import java.time.LocalDate;
 

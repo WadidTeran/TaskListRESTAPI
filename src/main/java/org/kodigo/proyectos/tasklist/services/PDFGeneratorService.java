@@ -14,7 +14,7 @@ import org.kodigo.proyectos.tasklist.entities.Relevance;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.utils.ChartGenerator;
 import org.kodigo.proyectos.tasklist.utils.PDFTableGenerator;
-import org.kodigo.proyectos.tasklist.utils.RangeDates;
+import org.kodigo.proyectos.tasklist.dtos.RangeDates;
 
 import static org.kodigo.proyectos.tasklist.utils.ExternalUtilityMethods.countTaskByRelevance;
 
