@@ -59,7 +59,7 @@ public class CategoryService {
     return categoryRepository.findByUser(user);
   }
 
-  private boolean existCategory(User user, String categoryName) {
+  public boolean existCategory(User user, String categoryName) {
     Optional<Category> optionalCategory = categoryRepository.findByUserAndName(user, categoryName);
     return optionalCategory.isPresent();
   }

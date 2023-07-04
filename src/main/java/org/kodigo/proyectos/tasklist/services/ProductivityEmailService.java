@@ -3,6 +3,7 @@ package org.kodigo.proyectos.tasklist.services;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.User;
 import org.kodigo.proyectos.tasklist.dtos.RangeDates;
+import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +18,7 @@ import java.util.concurrent.Executors;
 public class ProductivityEmailService {
 
   @Autowired private EmailSenderService emailSenderService;
-  @Autowired private TaskService taskService;
+  @Autowired private TaskRepository taskRepository;
 
   private static List<Task> filterCompletedTasksByDate(List<Task> tasks, RangeDates range) {
     return tasks.stream()
@@ -45,7 +46,9 @@ public class ProductivityEmailService {
 
   private void sendingRunnable(User user, RangeDates rangeDates) {
     List<Task> tasks =
-        filterCompletedTasksByDate(taskService.getAllCompletedTasks(user), rangeDates);
+        filterCompletedTasksByDate(
+            taskRepository.findByUserAndCompletedDateIsNotNullOrderByCompletedDateDesc(user),
+            rangeDates);
 
     if (!tasks.isEmpty()) {
       PDFGeneratorService reportDocument = new PDFGeneratorService("Productivity report.pdf");
