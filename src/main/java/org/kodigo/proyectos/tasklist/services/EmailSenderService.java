@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,11 @@ public class EmailSenderService {
   private final String senderEmail;
   private final MimeMessageHelper mimeMessageHelper;
   private final MimeMessage message;
-  @Autowired private JavaMailSender javaMailSender;
+  private final JavaMailSender javaMailSender;
 
   public EmailSenderService() throws MessagingException {
     this.senderEmail = "listtaskapp@gmail.com";
+    this.javaMailSender = new JavaMailSenderImpl();
     this.message = javaMailSender.createMimeMessage();
     this.mimeMessageHelper = new MimeMessageHelper(message, true);
   }
