@@ -58,25 +58,25 @@ public class TaskService {
     return taskRepository.findByUserAndCompletedDateIsNotNullOrderByCompletedDateDesc(user);
   }
 
-  public List<Task> getFuturePendingTasksByDueDate(User user, LocalDate dueDate) {
+  public List<Task> getFuturePendingTasks(User user) {
     return taskRepository.findByUserAndDueDateAfterAndCompletedDateIsNullOrderByDueDate(
-        user, dueDate);
+        user, LocalDate.now());
   }
 
-  public List<Task> getPreviousPendingTasksByDueDate(User user, LocalDate dueDate) {
+  public List<Task> getPreviousPendingTasks(User user) {
     return taskRepository.findByUserAndDueDateBeforeAndCompletedDateIsNullOrderByDueDate(
-        user, dueDate);
+        user, LocalDate.now());
   }
 
-  public List<Task> getPendingTaskByDate(User user, LocalDate dueDate) {
+  public List<Task> getPendingTaskForToday(User user) {
     return taskRepository.findByUserAndDueDateEqualsAndCompletedDateIsNullOrderByDueDate(
-        user, dueDate);
+        user, LocalDate.now());
   }
 
-  public List<Task> getCompletedTasksByExactDate(User user, LocalDate date) {
+  public List<Task> getCompletedTasksToday(User user) {
     return taskRepository
         .findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullOrderByCompletedDateDesc(
-            user, date);
+            user, LocalDate.now());
   }
 
   public List<Task> getPendingTasksByRelevance(User user, Relevance relevance) {
@@ -90,45 +90,40 @@ public class TaskService {
             user, relevance);
   }
 
-  public List<Task> getFuturePendingTasksByRelevance(
-      User user, LocalDate date, Relevance relevance) {
+  public List<Task> getFuturePendingTasksByRelevance(User user, Relevance relevance) {
     return taskRepository
         .findByUserAndDueDateAfterAndCompletedDateIsNullAndRelevanceEqualsOrderByDueDate(
-            user, date, relevance);
+            user, LocalDate.now(), relevance);
   }
 
-  public List<Task> getPreviousPendingTasksByRelevance(
-      User user, LocalDate date, Relevance relevance) {
+  public List<Task> getPreviousPendingTasksByRelevance(User user, Relevance relevance) {
     return taskRepository
         .findByUserAndDueDateBeforeAndCompletedDateIsNullAndRelevanceEqualsOrderByDueDate(
-            user, date, relevance);
+            user, LocalDate.now(), relevance);
   }
 
-  public List<Task> getPreviousCompletedTasks(User user, LocalDate date) {
+  public List<Task> getPreviousCompletedTasks(User user) {
     return taskRepository
         .findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullOrderByCompletedDateDesc(
-            user, date);
+            user, LocalDate.now());
   }
 
-  public List<Task> getPendingTasksForExactDateByRelevance(
-      User user, LocalDate dueDate, Relevance relevance) {
+  public List<Task> getPendingTasksForTodayByRelevance(User user, Relevance relevance) {
     return taskRepository
         .findByUserAndDueDateEqualsAndCompletedDateIsNullAndRelevanceEqualsOrderByDueDate(
-            user, dueDate, relevance);
+            user, LocalDate.now(), relevance);
   }
 
-  public List<Task> getPreviousCompletedTasksByRelevance(
-      User user, LocalDate completedDate, Relevance relevance) {
+  public List<Task> getPreviousCompletedTasksByRelevance(User user, Relevance relevance) {
     return taskRepository
         .findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullAndRelevanceEqualsOrderByCompletedDateDesc(
-            user, completedDate, relevance);
+            user, LocalDate.now(), relevance);
   }
 
-  public List<Task> getCompletedTasksOnExactDateByRelevance(
-      User user, LocalDate completedDate, Relevance relevance) {
+  public List<Task> getCompletedTasksTodayByRelevance(User user, Relevance relevance) {
     return taskRepository
         .findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndRelevanceEqualsOrderByCompletedDateDesc(
-            user, completedDate, relevance);
+            user, LocalDate.now(), relevance);
   }
 
   public List<Task> getPendingTasksByCategory(User user, Category category) {
@@ -140,36 +135,31 @@ public class TaskService {
         user, category);
   }
 
-  public List<Task> getFuturePendingTasksByCategory(
-      User user, LocalDate dueDate, Category category) {
+  public List<Task> getFuturePendingTasksByCategory(User user, Category category) {
     return taskRepository.findByUserAndDueDateAfterAndCompletedDateIsNullAndCategoryOrderByDueDate(
-        user, dueDate, category);
+        user, LocalDate.now(), category);
   }
 
-  public List<Task> getPreviousPendingTasksByCategory(
-      User user, LocalDate dueDate, Category category) {
+  public List<Task> getPreviousPendingTasksByCategory(User user, Category category) {
     return taskRepository.findByUserAndDueDateBeforeAndCompletedDateIsNullAndCategoryOrderByDueDate(
-        user, dueDate, category);
+        user, LocalDate.now(), category);
   }
 
-  public List<Task> getPendingTasksForExactDateByCategory(
-      User user, LocalDate dueDate, Category category) {
+  public List<Task> getPendingTasksForTodayByCategory(User user, Category category) {
     return taskRepository.findByUserAndDueDateEqualsAndCompletedDateIsNullAndCategoryOrderByDueDate(
-        user, dueDate, category);
+        user, LocalDate.now(), category);
   }
 
-  public List<Task> getPreviousCompletedTasksByCategory(
-      User user, LocalDate completedDate, Category category) {
+  public List<Task> getPreviousCompletedTasksByCategory(User user, Category category) {
     return taskRepository
         .findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullAndCategoryOrderByCompletedDateDesc(
-            user, completedDate, category);
+            user, LocalDate.now(), category);
   }
 
-  public List<Task> getCompletedTasksOnExactDateByCategory(
-      User user, LocalDate completedDate, Category category) {
+  public List<Task> getCompletedTasksTodayByCategory(User user, Category category) {
     return taskRepository
         .findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndCategoryOrderByCompletedDateDesc(
-            user, completedDate, category);
+            user, LocalDate.now(), category);
   }
 
   public List<Task> getPendingTasksByRelevanceAndCategory(
@@ -187,48 +177,46 @@ public class TaskService {
   }
 
   public List<Task> getFuturePendingTasksByRelevanceAndCategory(
-      User user, LocalDate dueDate, Relevance relevance, Category category) {
+      User user, Relevance relevance, Category category) {
     return taskRepository
         .findByUserAndDueDateAfterAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
-            user, dueDate, relevance, category);
+            user, LocalDate.now(), relevance, category);
   }
 
   public List<Task> getPreviousPendingTasksByRelevanceAndCategory(
-      User user, LocalDate dueDate, Relevance relevance, Category category) {
+      User user, Relevance relevance, Category category) {
     return taskRepository
         .findByUserAndDueDateBeforeAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
-            user, dueDate, relevance, category);
+            user, LocalDate.now(), relevance, category);
   }
 
-  public List<Task> getPendingTasksForExactDateByRelevanceAndCategory(
-      User user, LocalDate dueDate, Relevance relevance, Category category) {
+  public List<Task> getPendingTasksForTodayByRelevanceAndCategory(
+      User user, Relevance relevance, Category category) {
     return taskRepository
         .findByUserAndDueDateEqualsAndCompletedDateIsNullAndRelevanceEqualsAndCategoryOrderByDueDate(
-            user, dueDate, relevance, category);
+            user, LocalDate.now(), relevance, category);
   }
 
   public List<Task> getPreviousCompletedTasksByRelevanceAndCategory(
-      User user, LocalDate completedDate, Relevance relevance, Category category) {
+      User user, Relevance relevance, Category category) {
     return taskRepository
         .findByUserAndCompletedDateBeforeAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
-            user, completedDate, relevance, category);
+            user, LocalDate.now(), relevance, category);
   }
 
-  public List<Task> getCompletedTasksOnExactDateByRelevanceAndCategory(
-      User user, LocalDate completedDate, Relevance relevance, Category category) {
+  public List<Task> getCompletedTasksTodayByRelevanceAndCategory(
+      User user, Relevance relevance, Category category) {
     return taskRepository
         .findByUserAndCompletedDateEqualsAndCompletedDateIsNotNullAndRelevanceEqualsAndCategoryOrderByCompletedDateDesc(
-            user, completedDate, relevance, category);
+            user, LocalDate.now(), relevance, category);
   }
 
   private Task convertToTask(TaskDTO taskDTO) {
 
     Task task = new Task();
-    if (taskDTO.getName() != null) {
-      task.setName(taskDTO.getName());
-    }
-
+    task.setName(taskDTO.getName());
     task.setUser(userRepository.findById(taskDTO.getUserId()).orElseThrow());
+
     if (taskDTO.getCategoryId() != null) {
       task.setCategory(categoryRepository.findById(taskDTO.getCategoryId()).orElseThrow());
     }
@@ -244,7 +232,6 @@ public class TaskService {
     if (taskDTO.getRepeatConfig() != null) {
       task.setRepeatConfig(taskDTO.getRepeatConfig());
     }
-
     if (taskDTO.getRelevance() != null) {
       task.setRelevance(taskDTO.getRelevance());
     }
