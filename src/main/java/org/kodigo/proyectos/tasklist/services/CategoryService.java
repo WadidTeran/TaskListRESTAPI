@@ -1,8 +1,10 @@
 package org.kodigo.proyectos.tasklist.services;
 
 import org.kodigo.proyectos.tasklist.entities.Category;
+import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.User;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
+import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import java.util.Optional;
 public class CategoryService {
 
   @Autowired private CategoryRepository categoryRepository;
+  @Autowired private TaskRepository taskRepository;
   @Autowired private UserRepository userRepository;
 
   public boolean createCategory(User user, Category category) {
@@ -41,14 +44,29 @@ public class CategoryService {
     }
   }
 
-  public boolean deleteCategory(User user, Category category) {
-    if (existCategory(user, category.getName())) {
-      // TODO: Set the category_id field for each task in this category to null
+  public boolean deleteCategory(User user, String categoryName) {
+    Optional<Category> categoryOptional = categoryRepository.findByUserAndName(user, categoryName);
+    if (categoryOptional.isPresent()) {
+      Category category = categoryOptional.get();
+      for (Task task : category.getTasks()) {
+        task.setCategory(null);
+        taskRepository.save(task);
+      }
       categoryRepository.delete(category);
       return true;
-    } else {
-      return false;
     }
+    return false;
+  }
+
+  public boolean deleteAllCategories(User user) {
+    Optional<User> optionalUser = userRepository.findById(user.getUserId());
+    if (optionalUser.isPresent()) {
+      for (Category category : optionalUser.get().getCategories()) {
+        deleteCategory(user, category.getName());
+      }
+      return true;
+    }
+    return false;
   }
 
   public Optional<Category> getCategoryByName(User user, String categoryName) {
