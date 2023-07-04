@@ -16,9 +16,12 @@ public class CategoryService {
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private UserRepository userRepository;
 
-  public boolean createCategory(Category category) {
-    if (existUser(category.getUser()) && !existCategory(category)) {
-      category.setUser(userRepository.findById(category.getUser().getUserId()).get());
+  public boolean createCategory(User user, Category category) {
+    if (!existCategory(user, category.getName())
+        && category.getName() != null
+        && !category.getName().isBlank()
+        && !category.getName().isEmpty()) {
+      category.setUser(user);
       categoryRepository.save(category);
       return true;
     } else {
@@ -27,17 +30,20 @@ public class CategoryService {
   }
 
   public boolean modifyCategory(Category category) {
-    if (existCategory(category)) {
+    if (categoryRepository.existsById(category.getCategoryId())
+        && category.getName() != null
+        && !category.getName().isBlank()
+        && !category.getName().isEmpty()) {
       categoryRepository.save(category);
       return true;
-
     } else {
       return false;
     }
   }
 
-  public boolean deleteCategory(Category category) {
-    if (existCategory(category)) {
+  public boolean deleteCategory(User user, Category category) {
+    if (existCategory(user, category.getName())) {
+      // TODO: Set the category_id field for each task in this category to null
       categoryRepository.delete(category);
       return true;
     } else {
@@ -45,22 +51,16 @@ public class CategoryService {
     }
   }
 
-  public Optional<Category> getCategoryByName(User user, String name) {
-    return categoryRepository.findByUserAndName(user, name);
+  public Optional<Category> getCategoryByName(User user, String categoryName) {
+    return categoryRepository.findByUserAndName(user, categoryName);
   }
 
   public List<Category> getAllCategories(User user) {
     return categoryRepository.findByUser(user);
   }
 
-  private boolean existCategory(Category category) {
-    Optional<Category> optionalCategory =
-        categoryRepository.findByUserAndName(category.getUser(), category.getName());
+  private boolean existCategory(User user, String categoryName) {
+    Optional<Category> optionalCategory = categoryRepository.findByUserAndName(user, categoryName);
     return optionalCategory.isPresent();
-  }
-
-  private boolean existUser(User user) {
-    Optional<User> optionalUser = userRepository.findById(user.getUserId());
-    return optionalUser.isPresent();
   }
 }

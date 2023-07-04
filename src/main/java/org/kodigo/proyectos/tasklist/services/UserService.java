@@ -11,7 +11,8 @@ import java.util.Optional;
 public class UserService {
   @Autowired private UserRepository userRepository;
 
-  public boolean createUser(User user) { // Validar email?
+  public boolean createUser(User user) {
+    // TODO: Validate user fields
     Optional<User> optionalUserEmail = userRepository.findByEmail(user.getEmail());
     Optional<User> optionalUsername = userRepository.findByUsername(user.getUsername());
     if (optionalUserEmail.isEmpty() && optionalUsername.isEmpty()) {
@@ -23,6 +24,7 @@ public class UserService {
   }
 
   public boolean modifyUser(User user) {
+    // TODO: Validate user fields
     if (userRepository.existsById(user.getUserId())) {
       userRepository.save(user);
       return true;
@@ -33,6 +35,7 @@ public class UserService {
 
   public boolean deleteUser(User user) {
     if (userRepository.existsById(user.getUserId())) {
+      // TODO: Remove all tasks and categories that belong to this user
       userRepository.deleteById(user.getUserId());
       return true;
     } else {
