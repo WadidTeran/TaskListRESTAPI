@@ -20,16 +20,17 @@ public class TaskService {
   @Autowired private UserService userService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(Task task) {
-    if (validateTask(task) && task.getTaskId() == null) {
+  public boolean createTask(User user, Task task) {
+    if (userService.validateUser(user) && validateTask(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean modifyTask(Task task) {
-    if (validateTask(task)
+  public boolean modifyTask(User user, Task task) {
+    if (userService.validateUser(user)
+        && validateTask(task)
         && task.getTaskId() != null
         && taskRepository.existsById(task.getTaskId())) {
       taskRepository.save(task);
@@ -38,8 +39,8 @@ public class TaskService {
     return false;
   }
 
-  public boolean deleteTask(Task task) {
-    if (taskRepository.existsById(task.getTaskId())) {
+  public boolean deleteTask(User user, Task task) {
+    if (userService.validateUser(user) && taskRepository.existsById(task.getTaskId())) {
       taskRepository.deleteById(task.getTaskId());
       return true;
     }
