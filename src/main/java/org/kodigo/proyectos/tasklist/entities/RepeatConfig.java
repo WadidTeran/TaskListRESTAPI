@@ -23,11 +23,11 @@ public class RepeatConfig {
   @Column(name = "repeat_config_id")
   private Long repeatConfigId;
 
-  @Column(name = "repeat_type")
+  @Column(name = "repeat_type", nullable = false)
   @Enumerated(EnumType.STRING)
   private RepeatType repeatType;
 
-  @Column(name = "repeat_interval")
+  @Column(name = "repeat_interval", nullable = false)
   private Integer repeatInterval;
 
   @Column(name = "repeat_ends_at")

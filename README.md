@@ -19,6 +19,8 @@ This project is a practice of Spring Boot, Spring Web, Spring Data, Spring Secur
 - Lombok
 - Springdoc
 - JWT
+- ITextPDF
+- JFreeChart
 
 ## Documentation 📘📗
 

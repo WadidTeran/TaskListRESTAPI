@@ -1,6 +1,6 @@
 package org.kodigo.proyectos.tasklist.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -28,12 +28,12 @@ public class Category {
   @Column(nullable = false)
   private String name;
 
-  @JsonIgnoreProperties(value = "categories")
+  @JsonIgnore
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @JsonIgnoreProperties(value = "category")
+  @JsonIgnore
   @OneToMany(mappedBy = "category")
   private List<Task> tasks;
 

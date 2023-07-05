@@ -1,14 +1,7 @@
 package org.kodigo.proyectos.tasklist.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.FetchType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -33,12 +26,12 @@ public class User {
   @Column(nullable = false)
   private String password;
 
-  @JsonIgnoreProperties(value = "user")
-  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+  @JsonIgnore
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   private List<Category> categories;
 
-  @JsonIgnoreProperties(value = "user")
-  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+  @JsonIgnore
+  @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   private List<Task> tasks;
 
   public User(String username, String email, String password) {
