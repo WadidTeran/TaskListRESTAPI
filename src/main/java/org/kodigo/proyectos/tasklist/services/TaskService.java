@@ -1,6 +1,5 @@
 package org.kodigo.proyectos.tasklist.services;
 
-import org.kodigo.proyectos.tasklist.dtos.TaskDTO;
 import org.kodigo.proyectos.tasklist.entities.*;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
@@ -21,19 +20,18 @@ public class TaskService {
   @Autowired private UserService userService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(TaskDTO taskDTO) {
-    if (validateTaskDTO(taskDTO)) {
-      Task task = convertToTask(taskDTO);
+  public boolean createTask(Task task) {
+    if (validateTask(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean modifyTask(TaskDTO taskDTO) {
-    if (validateTaskDTO(taskDTO)) {
-      Task task = convertToTask(taskDTO);
-      task.setTaskId(taskDTO.getTaskDTOId());
+  public boolean modifyTask(Task task) {
+    if (validateTask(task)
+        && task.getTaskId() != null
+        && taskRepository.existsById(task.getTaskId())) {
       taskRepository.save(task);
       return true;
     }
@@ -52,51 +50,20 @@ public class TaskService {
     return taskRepository.findByUserAndName(user, nameTask);
   }
 
-  private Task convertToTask(TaskDTO taskDTO) {
-
-    Task task = new Task();
-    task.setName(taskDTO.getName());
-    task.setUser(userRepository.findById(taskDTO.getUserId()).orElseThrow());
-
-    if (taskDTO.getCategoryId() != null) {
-      task.setCategory(categoryRepository.findById(taskDTO.getCategoryId()).orElseThrow());
-    }
-    if (taskDTO.getDescription() != null) {
-      task.setDescription(taskDTO.getDescription());
-    }
-    if (taskDTO.getDueDate() != null) {
-      task.setDueDate(taskDTO.getDueDate());
-    }
-    if (taskDTO.getSpecifiedTime() != null) {
-      task.setSpecifiedTime(taskDTO.getSpecifiedTime());
-    }
-    if (taskDTO.getRepeatConfig() != null) {
-      task.setRepeatConfig(taskDTO.getRepeatConfig());
-    }
-    if (taskDTO.getRelevance() != null) {
-      task.setRelevance(taskDTO.getRelevance());
-    }
-
-    return task;
-  }
-
-  private boolean validateTaskDTO(TaskDTO taskDTO) {
-    String dtoName = taskDTO.getName();
-    Long dtoUserId = taskDTO.getUserId();
-    Long dtoCategoryId = taskDTO.getCategoryId();
-    RepeatConfig dtoRepeatConfig = taskDTO.getRepeatConfig();
-    return !(dtoUserId == null
-        || !userRepository.existsById(dtoUserId)
-        || dtoName == null
-        || dtoName.isEmpty()
-        || dtoName.isBlank()
-        || (dtoCategoryId != null && !categoryRepository.existsById(dtoCategoryId))
-        || (dtoRepeatConfig != null
-            && (taskDTO.getDueDate() == null
-                || dtoRepeatConfig.getRepeatInterval() == null
-                || dtoRepeatConfig.getRepeatType() == null
-                || (dtoRepeatConfig.getRepeatType() == RepeatType.HOUR
-                    && taskDTO.getSpecifiedTime() == null))));
+  private boolean validateTask(Task task) {
+    String taskName = task.getName();
+    Long categoryId = task.getCategory().getCategoryId();
+    RepeatConfig repeatConfig = task.getRepeatConfig();
+    return !(taskName == null
+        || taskName.isEmpty()
+        || taskName.isBlank()
+        || (categoryId != null && !categoryRepository.existsById(categoryId))
+        || (repeatConfig != null
+            && (task.getDueDate() == null
+                || repeatConfig.getRepeatInterval() == null
+                || repeatConfig.getRepeatType() == null
+                || (repeatConfig.getRepeatType() == RepeatType.HOUR
+                    && task.getSpecifiedTime() == null))));
   }
 
   public Optional<List<Task>> getTaskList(
