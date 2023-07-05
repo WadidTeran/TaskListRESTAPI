@@ -18,9 +18,7 @@ public class UserService {
   @Autowired private CategoryService categoryService;
 
   public boolean createUser(User user) {
-    Optional<User> optionalUserEmail = userRepository.findByEmail(user.getEmail());
-    Optional<User> optionalUsername = userRepository.findByUsername(user.getUsername());
-    if (optionalUsername.isEmpty() && optionalUserEmail.isEmpty() && validateUserFields(user)) {
+    if (user.getUserId() == null && thereAreNotEqualFields(user) && validateUserFields(user)) {
       userRepository.save(user);
       return true;
     }
@@ -28,7 +26,8 @@ public class UserService {
   }
 
   public boolean modifyUser(User user) {
-    if (userRepository.existsById(user.getUserId())
+    if (user.getUserId() != null
+        && userRepository.existsById(user.getUserId())
         && thereAreNotEqualFields(user)
         && validateUserFields(user)) {
       userRepository.save(user);
