@@ -52,7 +52,7 @@ public class CategoryService {
         task.setCategory(null);
         taskRepository.save(task);
       }
-      categoryRepository.delete(category);
+      categoryRepository.delete(categoryOptional.get());
       return true;
     }
     return false;
