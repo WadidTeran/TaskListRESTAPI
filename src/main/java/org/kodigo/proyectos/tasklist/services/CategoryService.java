@@ -2,7 +2,7 @@ package org.kodigo.proyectos.tasklist.services;
 
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.User;
+import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.utils.Response;
@@ -21,8 +21,8 @@ public class CategoryService {
 
   public boolean createCategory(Category category) {
     if (userService.validateUser(category.getUser())
-        && notExistCategory(category.getUser(), category.getName())
-        && validateCategory(category)) {
+            && notExistCategory(category.getUser(), category.getName())
+            && validateCategory(category)) {
       category.setUser(category.getUser());
       categoryRepository.save(category);
       return true;
@@ -43,11 +43,11 @@ public class CategoryService {
     return Response.BAD_REQUEST;
   }
 
-  public boolean deleteCategory(User user, Long categoryId) {
+  public boolean deleteCategory(UserEntity user, Long categoryId) {
     Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
     if (categoryOptional.isPresent()
-        && categoryRepository.findByUserAndName(user, categoryOptional.get().getName()).isPresent()
-        && userService.validateUser(user)) {
+            && categoryRepository.findByUserAndName(user, categoryOptional.get().getName()).isPresent()
+            && userService.validateUser(user)) {
       for (Task task : categoryOptional.get().getTasks()) {
         task.setCategory(null);
         taskRepository.save(task);
@@ -58,7 +58,7 @@ public class CategoryService {
     return false;
   }
 
-  public boolean deleteAllCategories(User user) {
+  public boolean deleteAllCategories(UserEntity user) {
     if (userService.validateUser(user)) {
       user.setCategories(getAllCategories(user));
       for (Category category : user.getCategories()) {
@@ -69,22 +69,22 @@ public class CategoryService {
     return false;
   }
 
-  public Optional<Category> getCategoryByName(User user, String categoryName) {
+  public Optional<Category> getCategoryByName(UserEntity user, String categoryName) {
     return categoryRepository.findByUserAndName(user, categoryName);
   }
 
-  public List<Category> getAllCategories(User user) {
+  public List<Category> getAllCategories(UserEntity user) {
     return categoryRepository.findByUser(user);
   }
 
-  public boolean notExistCategory(User user, String categoryName) {
+  public boolean notExistCategory(UserEntity user, String categoryName) {
     Optional<Category> optionalCategory = categoryRepository.findByUserAndName(user, categoryName);
     return optionalCategory.isEmpty();
   }
 
   private boolean validateCategory(Category category) {
     return (category.getName() != null
-        && !category.getName().isBlank()
-        && !category.getName().isEmpty());
+            && !category.getName().isBlank()
+            && !category.getName().isEmpty());
   }
 }

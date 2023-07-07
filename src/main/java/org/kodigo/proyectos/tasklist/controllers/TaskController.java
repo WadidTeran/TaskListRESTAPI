@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
 import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.User;
+import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ public class TaskController {
   @Operation(summary = "Gets a list of tasks according to query params")
   @GetMapping
   public ResponseEntity<List<Task>> getTaskList(
-      @RequestBody User user,
+      @RequestBody UserEntity user,
       @Parameter(description = "Task status query param: {completed, pending}") @RequestParam
           String status,
       @Parameter(description = "Task \"due to\" query param: {today, previous, future}")
