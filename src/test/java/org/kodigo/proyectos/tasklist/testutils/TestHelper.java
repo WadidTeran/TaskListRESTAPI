@@ -3,7 +3,7 @@ package org.kodigo.proyectos.tasklist.testutils;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.Relevance;
 import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.User;
+import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
@@ -19,7 +19,7 @@ public class TestHelper {
   @Autowired private UserRepository userRepository;
 
   public void createTestData() {
-    User user = new User("test", "test@test.com", "testpassword");
+    UserEntity user = new UserEntity("test", "test@test.com", "testpassword");
     user = userRepository.save(user);
 
     Category category1 = new Category("Test category 1", user);

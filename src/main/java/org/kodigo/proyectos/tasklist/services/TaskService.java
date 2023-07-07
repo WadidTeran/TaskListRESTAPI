@@ -20,7 +20,7 @@ public class TaskService {
   @Autowired private UserService userService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(User user, Task task) {
+  public boolean createTask(UserEntity user, Task task) {
     if (userService.validateUser(user) && validateTask(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
@@ -28,7 +28,7 @@ public class TaskService {
     return false;
   }
 
-  public boolean modifyTask(User user, Task task) {
+  public boolean modifyTask(UserEntity user, Task task) {
     if (userService.validateUser(user)
         && validateTask(task)
         && task.getTaskId() != null
@@ -39,7 +39,7 @@ public class TaskService {
     return false;
   }
 
-  public boolean deleteTask(User user, Task task) {
+  public boolean deleteTask(UserEntity user, Task task) {
     if (userService.validateUser(user) && taskRepository.existsById(task.getTaskId())) {
       taskRepository.deleteById(task.getTaskId());
       return true;
@@ -47,7 +47,7 @@ public class TaskService {
     return false;
   }
 
-  public Optional<Task> getTasksByName(User user, String nameTask) {
+  public Optional<Task> getTasksByName(UserEntity user, String nameTask) {
     return taskRepository.findByUserAndName(user, nameTask);
   }
 
@@ -68,11 +68,11 @@ public class TaskService {
   }
 
   public Optional<List<Task>> getTaskList(
-      User user, String status, String due, String rel, String category) {
+          UserEntity user, String status, String due, String rel, String category) {
     if (!validateParams(user, status, due, rel, category)) return Optional.empty();
 
     if (userService.validateUser(user)) {
-      User userDB =
+      UserEntity userDB =
           (user.getEmail() != null)
               ? userService.getUserByEmail(user.getEmail()).orElseThrow()
               : userService.getUserByUsername(user.getUsername()).orElseThrow();
@@ -95,7 +95,7 @@ public class TaskService {
   }
 
   private Optional<List<Task>> executeTaskQuery(
-      TaskQuery query, User user, String rel, String categoryName) {
+          TaskQuery query, UserEntity user, String rel, String categoryName) {
     Relevance relevance = (rel != null) ? Relevance.fromValue(rel) : null;
     Category category =
         (categoryName != null)
@@ -266,7 +266,7 @@ public class TaskService {
   }
 
   private boolean validateParams(
-      User user, String status, String due, String rel, String category) {
+          UserEntity user, String status, String due, String rel, String category) {
     return !((status == null
             || (!status.equals(ParamStrings.COMPLETED.value)
                 && !status.equals(ParamStrings.PENDING.value)))

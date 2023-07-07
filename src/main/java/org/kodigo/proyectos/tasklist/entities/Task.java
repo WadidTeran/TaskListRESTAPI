@@ -30,7 +30,7 @@ public class Task {
 
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  private UserEntity user;
 
   @Column(nullable = false)
   private String name;
@@ -58,7 +58,7 @@ public class Task {
   private RepeatConfig repeatConfig;
 
   public Task(
-      User user,
+      UserEntity user,
       String name,
       String description,
       Category category,

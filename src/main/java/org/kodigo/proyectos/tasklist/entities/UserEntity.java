@@ -11,7 +11,7 @@ import java.util.List;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-public class User {
+public class UserEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "user_id")
@@ -34,7 +34,7 @@ public class User {
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   private List<Task> tasks;
 
-  public User(String username, String email, String password) {
+  public UserEntity(String username, String email, String password) {
     this.username = username;
     this.email = email;
     this.password = password;
@@ -42,7 +42,7 @@ public class User {
 
   @Override
   public String toString() {
-    return "User{"
+    return "UserEntity{"
         + "userId="
         + userId
         + ", username='"

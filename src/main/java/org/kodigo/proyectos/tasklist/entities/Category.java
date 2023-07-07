@@ -30,13 +30,13 @@ public class Category {
 
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  private UserEntity user;
 
   @JsonIgnore
   @OneToMany(mappedBy = "category")
   private List<Task> tasks;
 
-  public Category(String name, User user) {
+  public Category(String name, UserEntity user) {
     this.name = name;
     this.user = user;
   }
