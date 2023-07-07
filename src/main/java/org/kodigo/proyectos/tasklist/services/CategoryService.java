@@ -5,7 +5,7 @@ import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.User;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
-import org.kodigo.proyectos.tasklist.repositories.UserRepository;
+import org.kodigo.proyectos.tasklist.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,52 +17,52 @@ public class CategoryService {
 
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private TaskRepository taskRepository;
-  @Autowired private UserRepository userRepository;
+  @Autowired private UserService userService;
 
-  public boolean createCategory(User user, Category category) {
-    if (notExistCategory(user, category.getName())
-        && category.getName() != null
-        && !category.getName().isBlank()
-        && !category.getName().isEmpty()) {
-      category.setUser(user);
+  public boolean createCategory(Category category) {
+    if (userService.validateUser(category.getUser())
+        && notExistCategory(category.getUser(), category.getName())
+        && validateCategory(category)) {
+      category.setUser(category.getUser());
       categoryRepository.save(category);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
-  public boolean modifyCategory(Category category) {
-    if (categoryRepository.existsById(category.getCategoryId())
-        && category.getName() != null
-        && !category.getName().isBlank()
-        && !category.getName().isEmpty()) {
-      categoryRepository.save(category);
-      return true;
-    } else {
-      return false;
+  public Response modifyCategory(Category category) {
+    Optional<Category> optionalCategory = categoryRepository.findById(category.getCategoryId());
+    if (optionalCategory.isEmpty() || userService.validateUser(category.getUser())) {
+      return Response.NOT_FOUND;
     }
+    if (validateCategory(category) && notExistCategory(category.getUser(), category.getName())) {
+      optionalCategory.get().setName(category.getName());
+      categoryRepository.save(optionalCategory.get());
+      return Response.OK;
+    }
+    return Response.BAD_REQUEST;
   }
 
-  public boolean deleteCategory(User user, String categoryName) {
-    Optional<Category> categoryOptional = categoryRepository.findByUserAndName(user, categoryName);
-    if (categoryOptional.isPresent()) {
-      Category category = categoryOptional.get();
-      for (Task task : category.getTasks()) {
+  public boolean deleteCategory(User user, Long categoryId) {
+    Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
+    if (categoryOptional.isPresent()
+        && categoryRepository.findByUserAndName(user, categoryOptional.get().getName()).isPresent()
+        && userService.validateUser(user)) {
+      for (Task task : categoryOptional.get().getTasks()) {
         task.setCategory(null);
         taskRepository.save(task);
       }
-      categoryRepository.deleteById(category.getCategoryId());
+      categoryRepository.deleteById(categoryOptional.get().getCategoryId());
       return true;
     }
     return false;
   }
 
   public boolean deleteAllCategories(User user) {
-    Optional<User> optionalUser = userRepository.findById(user.getUserId());
-    if (optionalUser.isPresent()) {
-      for (Category category : optionalUser.get().getCategories()) {
-        deleteCategory(user, category.getName());
+    if (userService.validateUser(user)) {
+      user.setCategories(getAllCategories(user));
+      for (Category category : user.getCategories()) {
+        deleteCategory(user, category.getCategoryId());
       }
       return true;
     }
@@ -80,5 +80,11 @@ public class CategoryService {
   public boolean notExistCategory(User user, String categoryName) {
     Optional<Category> optionalCategory = categoryRepository.findByUserAndName(user, categoryName);
     return optionalCategory.isEmpty();
+  }
+
+  private boolean validateCategory(Category category) {
+    return (category.getName() != null
+        && !category.getName().isBlank()
+        && !category.getName().isEmpty());
   }
 }
