@@ -2,10 +2,7 @@ package org.kodigo.proyectos.tasklist.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,17 +24,20 @@ public class UserEntity {
   private Long userId;
 
   @NotBlank
+  @NotNull
   @Size(max = 30)
   @Column(unique = true, nullable = false)
   private String username;
 
   @Email(regexp = "^[A-Za-z0-9+_.-]+@[a-z]+\\.(co|com)$")
   @NotBlank
+  @NotNull
   @Size(max = 80)
   @Column(unique = true, nullable = false)
   private String email;
 
   @NotBlank
+  @NotNull
   @Length(min = 8)
   @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$")
   @Column(nullable = false)
