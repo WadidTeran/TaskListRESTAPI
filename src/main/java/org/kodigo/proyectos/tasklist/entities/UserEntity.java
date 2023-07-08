@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -16,6 +18,8 @@ import java.util.List;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class UserEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,12 +50,6 @@ public class UserEntity {
   @JsonIgnore
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   private List<Task> tasks;
-
-  public UserEntity(String username, String email, String password) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-  }
 
   @Override
   public String toString() {
