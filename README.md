@@ -15,6 +15,7 @@ This project is a practice of Spring Boot, Spring Web, Spring Data, Spring Secur
 - Spring Data JPA
 - Spring Security
 - MySQL Driver
+- Validation
 - Java Mail Sender
 - Lombok
 - Springdoc
