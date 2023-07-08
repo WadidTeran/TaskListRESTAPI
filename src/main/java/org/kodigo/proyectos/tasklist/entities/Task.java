@@ -12,6 +12,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -32,9 +34,12 @@ public class Task {
   @JoinColumn(name = "user_id", nullable = false)
   private UserEntity user;
 
+  @NotBlank
+  @Size(max = 50)
   @Column(nullable = false)
   private String name;
 
+  @Size(max = 300)
   private String description;
 
   @ManyToOne
