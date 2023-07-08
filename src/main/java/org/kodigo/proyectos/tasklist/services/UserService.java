@@ -1,7 +1,6 @@
 package org.kodigo.proyectos.tasklist.services;
 
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
-import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,32 +13,28 @@ import static org.kodigo.proyectos.tasklist.utils.CredentialsValidator.isValidPa
 @Service
 public class UserService {
   @Autowired private UserRepository userRepository;
-  @Autowired private TaskRepository taskRepository;
-  @Autowired private CategoryService categoryService;
 
   public boolean createUser(UserEntity user) {
-    if (user.getUserId() == null && thereAreNotEqualFields(user) && validateUserFields(user)) {
+    if (user.getUserId() == null && validateUserFields(user)) {
       userRepository.save(user);
       return true;
     }
     return false;
   }
 
-  public boolean modifyUser(UserEntity user) {
-    if (user.getUserId() != null
-        && userRepository.existsById(user.getUserId())
-        && thereAreNotEqualFields(user)
-        && validateUserFields(user)) {
-      userRepository.save(user);
+  public boolean modifyUser(UserEntity newUser) {
+    Optional<UserEntity> optUser = userRepository.findById(newUser.getUserId());
+    if (optUser.isPresent() && validateUserFields(newUser)) {
+      setChanges(optUser.get(), newUser);
+      userRepository.save(optUser.get());
       return true;
     }
     return false;
   }
 
-  public boolean deleteUser(String userName) {
-    Optional<UserEntity> optUser = userRepository.findByUsername(userName);
-    if (optUser.isPresent()) {
-      userRepository.delete(optUser.get());
+  public boolean deleteUser(UserEntity user) {
+    if (validateUser(user)) {
+      userRepository.delete(user);
       return true;
     }
     return false;
@@ -65,15 +60,32 @@ public class UserService {
   }
 
   private boolean validateUserFields(UserEntity user) {
-    return (isValidEmail(user.getEmail()) && isValidPassword(user.getPassword()));
+    if (user.getEmail() != null) {
+      Optional<UserEntity> optUserByEmail = userRepository.findByEmail(user.getEmail());
+      if (!isValidEmail(user.getEmail())
+          || (optUserByEmail.isPresent()
+              && !optUserByEmail.get().getUserId().equals(user.getUserId()))) {
+        return false;
+      }
+    }
+    if (user.getUsername() != null) {
+      Optional<UserEntity> optUserByName = userRepository.findByUsername(user.getUsername());
+      if (optUserByName.isPresent() && !optUserByName.get().getUserId().equals(user.getUserId())) {
+        return false;
+      }
+    }
+    return user.getPassword() == null || isValidPassword(user.getPassword());
   }
 
-  private boolean thereAreNotEqualFields(UserEntity user) {
-    Optional<UserEntity> optUserByName = userRepository.findByUsername(user.getUsername());
-    Optional<UserEntity> optUserByEmail = userRepository.findByEmail(user.getEmail());
-    return ((optUserByName.isEmpty() && optUserByEmail.isEmpty())
-        || (optUserByName.isPresent() && optUserByName.get().getUserId().equals(user.getUserId()))
-        || (optUserByEmail.isPresent()
-            && optUserByEmail.get().getUserId().equals(user.getUserId())));
+  private void setChanges(UserEntity oldUser, UserEntity newUser) {
+    if (newUser.getUsername() != null && !oldUser.getUsername().equals(newUser.getUsername())) {
+      oldUser.setUsername(newUser.getUsername());
+    }
+    if (newUser.getEmail() != null && !oldUser.getEmail().equals(newUser.getEmail())) {
+      oldUser.setEmail(newUser.getEmail());
+    }
+    if (newUser.getPassword() != null && !oldUser.getPassword().equals(newUser.getPassword())) {
+      oldUser.setPassword(newUser.getPassword());
+    }
   }
 }
