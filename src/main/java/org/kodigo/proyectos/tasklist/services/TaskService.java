@@ -20,17 +20,16 @@ public class TaskService {
   @Autowired private UserService userService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(UserEntity user, Task task) {
-    if (userService.validateUser(user) && validateTask(task) && task.getTaskId() == null) {
+  public boolean createTask(Task task) {
+    if (validateTask(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean modifyTask(UserEntity user, Task task) {
-    if (userService.validateUser(user)
-        && validateTask(task)
+  public boolean modifyTask(Task task) {
+    if (validateTask(task)
         && task.getTaskId() != null
         && taskRepository.existsById(task.getTaskId())) {
       taskRepository.save(task);
@@ -39,8 +38,8 @@ public class TaskService {
     return false;
   }
 
-  public boolean deleteTask(UserEntity user, Task task) {
-    if (userService.validateUser(user) && taskRepository.existsById(task.getTaskId())) {
+  public boolean deleteTask(Task task) {
+    if (taskRepository.existsById(task.getTaskId())) {
       taskRepository.deleteById(task.getTaskId());
       return true;
     }
@@ -52,42 +51,29 @@ public class TaskService {
   }
 
   private boolean validateTask(Task task) {
-    String taskName = task.getName();
     Long categoryId = task.getCategory().getCategoryId();
     RepeatConfig repeatConfig = task.getRepeatConfig();
-    return !(taskName == null
-        || taskName.isEmpty()
-        || taskName.isBlank()
-        || (categoryId != null && !categoryRepository.existsById(categoryId))
+    return !((categoryId != null && !categoryRepository.existsById(categoryId))
         || (repeatConfig != null
             && (task.getDueDate() == null
-                || repeatConfig.getRepeatInterval() == null
-                || repeatConfig.getRepeatType() == null
                 || (repeatConfig.getRepeatType() == RepeatType.HOUR
                     && task.getSpecifiedTime() == null))));
   }
 
   public Optional<List<Task>> getTaskList(
-          UserEntity user, String status, String due, String rel, String category) {
+      UserEntity user, String status, String due, String rel, String category) {
     if (!validateParams(user, status, due, rel, category)) return Optional.empty();
 
-    if (userService.validateUser(user)) {
-      UserEntity userDB =
-          (user.getEmail() != null)
-              ? userService.getUserByEmail(user.getEmail()).orElseThrow()
-              : userService.getUserByUsername(user.getUsername()).orElseThrow();
-
-      String[] params =
-          new String[] {
-            status,
-            due,
-            (rel == null) ? null : ParamStrings.RELEVANCE.value,
-            (category == null) ? null : ParamStrings.CATEGORY.value
-          };
-      for (TaskQuery query : TaskQuery.values()) {
-        if (Arrays.equals(params, query.params)) {
-          return executeTaskQuery(query, userDB, rel, category);
-        }
+    String[] params =
+        new String[] {
+          status,
+          due,
+          (rel == null) ? null : ParamStrings.RELEVANCE.value,
+          (category == null) ? null : ParamStrings.CATEGORY.value
+        };
+    for (TaskQuery query : TaskQuery.values()) {
+      if (Arrays.equals(params, query.params)) {
+        return executeTaskQuery(query, user, rel, category);
       }
     }
 
@@ -95,7 +81,7 @@ public class TaskService {
   }
 
   private Optional<List<Task>> executeTaskQuery(
-          TaskQuery query, UserEntity user, String rel, String categoryName) {
+      TaskQuery query, UserEntity user, String rel, String categoryName) {
     Relevance relevance = (rel != null) ? Relevance.fromValue(rel) : null;
     Category category =
         (categoryName != null)
@@ -266,7 +252,7 @@ public class TaskService {
   }
 
   private boolean validateParams(
-          UserEntity user, String status, String due, String rel, String category) {
+      UserEntity user, String status, String due, String rel, String category) {
     return !((status == null
             || (!status.equals(ParamStrings.COMPLETED.value)
                 && !status.equals(ParamStrings.PENDING.value)))

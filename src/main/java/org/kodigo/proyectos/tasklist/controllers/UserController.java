@@ -15,18 +15,14 @@ public class UserController {
   @Operation(summary = "Modify account by specific instructions")
   @PatchMapping
   public ResponseEntity<UserEntity> modifyAccount(@RequestBody UserEntity user) {
-    if (userService.modifyUser(user)) {
-      return ResponseEntity.ok().build();
-    }
-    return ResponseEntity.badRequest().build();
+    userService.saveUser(user);
+    return ResponseEntity.ok().build();
   }
 
   @Operation(summary = "Delete specific account and delete related categories and tasks")
   @DeleteMapping
   public ResponseEntity<?> deleteAccount(@RequestBody UserEntity user) {
-    if (userService.deleteUser(user)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.badRequest().build();
+    userService.deleteUser(user);
+    return ResponseEntity.noContent().build();
   }
 }

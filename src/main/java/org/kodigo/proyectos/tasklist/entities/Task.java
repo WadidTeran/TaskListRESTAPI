@@ -13,6 +13,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,6 +37,8 @@ public class Task {
   private UserEntity user;
 
   @NotBlank
+  @NotEmpty
+  @NotNull
   @Size(max = 50)
   @Column(nullable = false)
   private String name;
@@ -64,7 +68,7 @@ public class Task {
 
   public Task(
       UserEntity user,
-      String name,
+      @NotNull String name,
       String description,
       Category category,
       Relevance relevance,
