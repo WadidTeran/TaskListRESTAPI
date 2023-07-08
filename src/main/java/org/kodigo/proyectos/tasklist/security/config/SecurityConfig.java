@@ -1,5 +1,8 @@
 package org.kodigo.proyectos.tasklist.security.config;
 
+import org.kodigo.proyectos.tasklist.security.jwt.filters.JwtAuthenticationFilter;
+import org.kodigo.proyectos.tasklist.security.jwt.filters.JwtAuthorizationFilter;
+import org.kodigo.proyectos.tasklist.security.jwt.utils.JwtUtils;
 import org.kodigo.proyectos.tasklist.services.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,13 +15,22 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
   @Autowired private UserDetailsServiceImpl userDetailsService;
 
+  @Autowired private JwtUtils jwtUtils;
+  @Autowired private JwtAuthorizationFilter authorizationFilter;
+
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  public SecurityFilterChain securityFilterChain(
+      HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+    JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtUtils);
+    jwtAuthenticationFilter.setAuthenticationManager(authenticationManager);
+    jwtAuthenticationFilter.setFilterProcessesUrl("/login");
+
     return http.authorizeHttpRequests(
             authorize ->
                 authorize
@@ -31,6 +43,8 @@ public class SecurityConfig {
             session -> {
               session.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
             })
+        .addFilter(jwtAuthenticationFilter)
+        .addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class)
         .csrf(AbstractHttpConfigurer::disable)
         .build();
   }
