@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -39,7 +40,7 @@ public class RepeatConfig {
   private LocalDate repeatEndsAt;
 
   public RepeatConfig(
-      @NotNull RepeatType repeatType, @NotNull Integer repeatInterval, LocalDate repeatEndsAt) {
+          @NotNull RepeatType repeatType, @Valid @NotNull Integer repeatInterval, LocalDate repeatEndsAt) {
     this.repeatType = repeatType;
     this.repeatInterval = repeatInterval;
     this.repeatEndsAt = repeatEndsAt;

@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import java.util.List;
 
@@ -26,13 +27,14 @@ public class UserEntity {
   @Column(unique = true, nullable = false)
   private String username;
 
-  @Email
+  @Email(regexp = "^[A-Za-z0-9+_.-]+@[a-z]+\\.(co|com)$")
   @NotBlank
   @Size(max = 80)
   @Column(unique = true, nullable = false)
   private String email;
 
   @NotBlank
+  @Length(min = 8)
   @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$")
   @Column(nullable = false)
   private String password;
