@@ -28,7 +28,7 @@ public class CategoryController {
     List<Category> categories = userEntity.getCategories();
     return (!categories.isEmpty())
         ? ResponseEntity.ok(categories)
-        : ResponseEntity.notFound().build();
+        : ResponseEntity.noContent().build();
   }
 
   @Operation(summary = "Create category")

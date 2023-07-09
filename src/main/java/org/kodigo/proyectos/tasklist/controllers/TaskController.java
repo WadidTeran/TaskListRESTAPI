@@ -43,7 +43,7 @@ public class TaskController {
     Optional<List<Task>> optTaskList = taskService.getTaskList(user, status, due, rel, category);
     if (optTaskList.isPresent()) {
       List<Task> tasks = optTaskList.get();
-      return tasks.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(tasks);
+      return tasks.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(tasks);
     }
     return ResponseEntity.badRequest().build();
   }
