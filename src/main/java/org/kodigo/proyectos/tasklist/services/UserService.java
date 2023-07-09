@@ -11,6 +11,7 @@ import java.util.Optional;
 @Service
 public class UserService {
   @Autowired private UserRepository userRepository;
+  @Autowired private CategoryService categoryService;
   @Autowired private PasswordEncoder passwordEncoder;
 
   public boolean registerUser(UserEntity user) {
@@ -22,11 +23,24 @@ public class UserService {
     return false;
   }
 
+  public boolean modifyUser(UserEntity oldUser, UserEntity newUser) {
+    if ((newUser.getUserId() == null)
+        || (!oldUser.getUserId().equals(newUser.getUserId()))
+        || (!oldUser.getUsername().equals(newUser.getUsername())
+            && getUserByUsername(newUser.getUsername()).isPresent())
+        || (!oldUser.getEmail().equals(newUser.getEmail())
+            && getUserByEmail(newUser.getEmail()).isPresent())) return false;
+
+    saveUser(newUser);
+    return true;
+  }
+
   public void saveUser(UserEntity user) {
     userRepository.save(user);
   }
 
   public void deleteUser(UserEntity user) {
+    categoryService.deleteAllCategories(user);
     userRepository.delete(user);
   }
 
