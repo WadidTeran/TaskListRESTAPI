@@ -46,6 +46,7 @@ public class SecurityConfig {
         .addFilter(jwtAuthenticationFilter)
         .addFilterBefore(authorizationFilter, UsernamePasswordAuthenticationFilter.class)
         .csrf(AbstractHttpConfigurer::disable)
+        .cors(AbstractHttpConfigurer::disable)
         .build();
   }
 
