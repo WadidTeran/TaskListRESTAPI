@@ -5,6 +5,7 @@ import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -21,39 +22,85 @@ public class TaskService {
   @Autowired private CategoryRepository categoryRepository;
 
   public boolean createTask(UserEntity user, Task task) {
-    if (userService.validateUser(user) && validateTask(task) && task.getTaskId() == null) {
+    if (userService.validateUser(user) && validateTask(task)) {
       taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean modifyTask(UserEntity user, Task task) {
-    if (userService.validateUser(user)
-        && validateTask(task)
-        && task.getTaskId() != null
-        && taskRepository.existsById(task.getTaskId())) {
-      taskRepository.save(task);
-      return true;
+  public HttpStatus modifyTask(UserEntity user, Task task) {
+    if (!validateTask(task)) {
+      return HttpStatus.BAD_REQUEST;
     }
-    return false;
-  }
-
-  public boolean deleteTask(UserEntity user, Task task) {
     if (userService.validateUser(user) && taskRepository.existsById(task.getTaskId())) {
-      taskRepository.deleteById(task.getTaskId());
+      taskRepository.save(task);
+      return HttpStatus.OK;
+    }
+    return HttpStatus.NOT_FOUND;
+  }
+
+  public boolean setCompletedDate(UserEntity user, Long taskId) {
+    Optional<Task> optTask = taskRepository.findById(taskId);
+    if (userService.validateUser(user)
+        && optTask.isPresent()
+        && matchUsers(user, optTask.get().getUser())) {
+      if (optTask.get().getCompletedDate() == null) {
+        optTask.get().setCompletedDate(LocalDate.now());
+      } else {
+        optTask.get().setCompletedDate(null);
+      }
+      taskRepository.save(optTask.get());
+      return true;
+    }
+    return false;
+  }
+
+  public boolean deleteTaskById(UserEntity user, Long taskId) {
+    Optional<Task> optTask = taskRepository.findById(taskId);
+    if (userService.validateUser(user)
+        && optTask.isPresent()
+        && matchUsers(user, optTask.get().getUser())) {
+      taskRepository.deleteById(taskId);
+      return true;
+    }
+    return false;
+  }
+
+  public boolean deleteTasks(
+      UserEntity user, String status, String due, String relevance, String category) {
+
+    Optional<List<Task>> optTasks = getTaskList(user, status, due, relevance, category);
+    if (optTasks.isPresent()) {
+      for (Task task : optTasks.get()) {
+        taskRepository.delete(task);
+      }
       return true;
     }
     return false;
   }
 
   public Optional<Task> getTasksByName(UserEntity user, String nameTask) {
-    return taskRepository.findByUserAndName(user, nameTask);
+    Optional<Task> optTask = taskRepository.findByUserAndName(user, nameTask);
+    if (userService.validateUser(user) && optTask.isPresent()) {
+      return taskRepository.findByUserAndName(user, nameTask);
+    }
+    return Optional.empty();
+  }
+
+  public Optional<Task> getTaskById(UserEntity user, Long taskId) {
+    Optional<Task> optTask = taskRepository.findById(taskId);
+    if (userService.validateUser(user)
+        && optTask.isPresent()
+        && matchUsers(user, optTask.get().getUser())) {
+      return optTask;
+    }
+    return Optional.empty();
   }
 
   private boolean validateTask(Task task) {
     String taskName = task.getName();
-    Long categoryId = task.getCategory().getCategoryId();
+    Long categoryId = task.getCategory() != null ? task.getCategory().getCategoryId() : null;
     RepeatConfig repeatConfig = task.getRepeatConfig();
     return !(taskName == null
         || taskName.isEmpty()
@@ -68,7 +115,7 @@ public class TaskService {
   }
 
   public Optional<List<Task>> getTaskList(
-          UserEntity user, String status, String due, String rel, String category) {
+      UserEntity user, String status, String due, String rel, String category) {
     if (!validateParams(user, status, due, rel, category)) return Optional.empty();
 
     if (userService.validateUser(user)) {
@@ -95,7 +142,7 @@ public class TaskService {
   }
 
   private Optional<List<Task>> executeTaskQuery(
-          TaskQuery query, UserEntity user, String rel, String categoryName) {
+      TaskQuery query, UserEntity user, String rel, String categoryName) {
     Relevance relevance = (rel != null) ? Relevance.fromValue(rel) : null;
     Category category =
         (categoryName != null)
@@ -266,7 +313,7 @@ public class TaskService {
   }
 
   private boolean validateParams(
-          UserEntity user, String status, String due, String rel, String category) {
+      UserEntity user, String status, String due, String rel, String category) {
     return !((status == null
             || (!status.equals(ParamStrings.COMPLETED.value)
                 && !status.equals(ParamStrings.PENDING.value)))
@@ -283,5 +330,9 @@ public class TaskService {
         || (status.equals(ParamStrings.COMPLETED.toString()))
             && due != null
             && due.equals(ParamStrings.FUTURE.value));
+  }
+
+  private boolean matchUsers(UserEntity taskUser, UserEntity realUser) {
+    return taskUser.getUserId().equals(realUser.getUserId());
   }
 }

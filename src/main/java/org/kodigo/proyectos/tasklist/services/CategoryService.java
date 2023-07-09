@@ -5,8 +5,8 @@ import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
-import org.kodigo.proyectos.tasklist.utils.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,17 +30,17 @@ public class CategoryService {
     return false;
   }
 
-  public Response modifyCategory(Category category) {
+  public HttpStatus modifyCategory(Category category) {
     Optional<Category> optionalCategory = categoryRepository.findById(category.getCategoryId());
     if (optionalCategory.isEmpty() || userService.validateUser(category.getUser())) {
-      return Response.NOT_FOUND;
+      return HttpStatus.NOT_FOUND;
     }
     if (validateCategory(category) && notExistCategory(category.getUser(), category.getName())) {
       optionalCategory.get().setName(category.getName());
       categoryRepository.save(optionalCategory.get());
-      return Response.OK;
+      return HttpStatus.OK;
     }
-    return Response.BAD_REQUEST;
+    return HttpStatus.BAD_REQUEST;
   }
 
   public boolean deleteCategory(UserEntity user, Long categoryId) {
