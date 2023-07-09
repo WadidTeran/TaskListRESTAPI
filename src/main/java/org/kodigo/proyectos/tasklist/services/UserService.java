@@ -12,6 +12,7 @@ import java.util.Optional;
 public class UserService {
   @Autowired private UserRepository userRepository;
   @Autowired private CategoryService categoryService;
+  @Autowired private TaskService taskService;
   @Autowired private PasswordEncoder passwordEncoder;
 
   public boolean registerUser(UserEntity user) {
@@ -40,6 +41,7 @@ public class UserService {
   }
 
   public void deleteUser(UserEntity user) {
+    taskService.deleteTasks(user);
     categoryService.deleteAllCategories(user);
     userRepository.delete(user);
   }

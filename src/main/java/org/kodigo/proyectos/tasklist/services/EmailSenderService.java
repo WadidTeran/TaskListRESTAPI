@@ -10,6 +10,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Service
 @Slf4j
@@ -48,15 +50,16 @@ public class EmailSenderService {
       mimeMessageHelper.setTo(receiverEmail);
       mimeMessageHelper.setText(textBody);
       mimeMessageHelper.setSubject(subject);
-      FileSystemResource fileSystemResource = new FileSystemResource(new File(fileDataSource));
-      if (fileSystemResource.exists()) {
-        mimeMessageHelper.addAttachment(fileSystemResource.getFilename(), fileSystemResource);
+      File file = new File(fileDataSource);
+      if (file.exists()) {
+        mimeMessageHelper.addAttachment(file.getName(), file);
       } else {
         return false;
       }
       javaMailSender.send(message);
+      Files.delete(file.toPath());
       return true;
-    } catch (MessagingException e) {
+    } catch (Exception e) {
       return false;
     }
   }

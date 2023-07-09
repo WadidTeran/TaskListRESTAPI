@@ -4,6 +4,7 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,9 +102,7 @@ public class PDFGeneratorService {
           ChartGenerator.generateBarChart(
               titlesChart, ChartGenerator.generateRelevanceDataset(tasks)));
       File chartImageFile = new File("chart.png");
-      if (chartImageFile.exists()) {
-        chartImageFile.deleteOnExit();
-      }
+      Files.delete(chartImageFile.toPath());
 
       int[] relevanceTaskCount = countTaskByRelevance(tasks);
       for (int i = 0; i < relevanceTaskCount.length; i++) {
