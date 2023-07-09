@@ -3,7 +3,6 @@ package org.kodigo.proyectos.tasklist.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.AllArgsConstructor;
-import org.kodigo.proyectos.tasklist.dtos.UserAndTaskDTO;
 import org.kodigo.proyectos.tasklist.controllers.utils.ControllerUtils;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
@@ -75,22 +74,21 @@ public class TaskController {
 
   @Operation(summary = "Create task")
   @PostMapping
-  public ResponseEntity<Task> createTask(@RequestBody UserAndTaskDTO userAndTaskDTO) {
-    boolean created = taskService.createTask(userAndTaskDTO.getUser(), userAndTaskDTO.getTask());
+  public ResponseEntity<Task> createTask(@RequestBody Task task) {
+    boolean created = taskService.createTask(task);
     if (created) {
-      return ResponseEntity.created(URI.create("/" + userAndTaskDTO.getTask().getName()))
-          .body(userAndTaskDTO.getTask());
+      return ResponseEntity.created(URI.create("/" + task.getName())).body(task);
     }
     return ResponseEntity.badRequest().build();
   }
 
   @Operation(summary = "Modify task")
   @PutMapping
-  public ResponseEntity<Task> modifyTask(@RequestBody UserAndTaskDTO userAndTaskDTO) {
+  public ResponseEntity<Task> modifyTask(@RequestBody Task task) {
 
-    switch (taskService.modifyTask(userAndTaskDTO.getUser(), userAndTaskDTO.getTask())) {
+    switch (taskService.modifyTask(task)) {
       case OK -> {
-        return ResponseEntity.ok(userAndTaskDTO.getTask());
+        return ResponseEntity.ok(task);
       }
       case BAD_REQUEST -> {
         return ResponseEntity.badRequest().build();
@@ -114,30 +112,20 @@ public class TaskController {
 
   @Operation(summary = "Deletes task by Id")
   @DeleteMapping("/{taskId}")
-  public ResponseEntity<?> deleteTask(@RequestBody UserEntity user, @PathVariable Long taskId) {
-    if (taskService.deleteTaskById(user, taskId)) {
+  public ResponseEntity<Task> deleteTask(@PathVariable Long taskId) {
+    if (taskService.deleteTask(taskId)) {
       return ResponseEntity.noContent().build();
     }
     return ResponseEntity.notFound().build();
   }
 
-  @Operation(summary = "Deletes a list of tasks according to query params")
+  @Operation(summary = "Deletes all tasks")
   @DeleteMapping
-  public ResponseEntity<Task> deleteTasks(
-      @RequestBody UserEntity user,
-      @Parameter(description = "Task status query param: {completed, pending}") @RequestParam
-          String status,
-      @Parameter(description = "Task \"due to\" query param: {today, previous, future}")
-          @RequestParam(required = false)
-          String due,
-      @Parameter(description = "Task relevance query param: {none, low, medium, high}")
-          @RequestParam(required = false)
-          String rel,
-      @Parameter(description = "Task category name query param") @RequestParam(required = false)
-          String category) {
-    if (taskService.deleteTasks(user, status, due, rel, category)) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  public ResponseEntity<Task> deleteTasks(@RequestHeader HttpHeaders headers) {
+    UserEntity user = controllerUtils.getUserEntityFromHeaders(headers);
+    if (taskService.deleteTasks(user)) {
+      return ResponseEntity.noContent().build();
     }
-    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    return ResponseEntity.notFound().build();
   }
 }

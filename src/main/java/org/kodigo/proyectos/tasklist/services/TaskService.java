@@ -16,7 +16,6 @@ import java.util.Optional;
 @Service
 public class TaskService {
   @Autowired private TaskRepository taskRepository;
-  @Autowired private UserRepository userRepository;
   @Autowired private CategoryService categoryService;
   @Autowired private CategoryRepository categoryRepository;
 
@@ -30,9 +29,7 @@ public class TaskService {
 
   public boolean setCompletedDate(UserEntity user, Long taskId) {
     Optional<Task> optTask = taskRepository.findById(taskId);
-    if (userService.validateUser(user)
-        && optTask.isPresent()
-        && matchUsers(user, optTask.get().getUser())) {
+    if (optTask.isPresent() && matchUsers(user, optTask.get().getUser())) {
       if (optTask.get().getCompletedDate() == null) {
         optTask.get().setCompletedDate(LocalDate.now());
       } else {
@@ -44,33 +41,33 @@ public class TaskService {
     return false;
   }
 
- public void deleteTasks(
-      UserEntity user) {
-	  List<Task> tasks= user.getTasks();
+  public boolean deleteTasks(UserEntity user) {
+    List<Task> tasks = user.getTasks();
+    if (tasks.isEmpty()) return false;
     tasks.forEach(taskRepository::delete);
-      }
-
-  public boolean modifyTask(Task task) {
-    if (validateTask(task)
-        && task.getTaskId() != null
-        && taskRepository.existsById(task.getTaskId())) {
-      taskRepository.save(task);
-      return true;
-    }
-    return false;
+    return true;
   }
 
-  public boolean deleteTask(Task task) {
-    if (task.getTaskId()!=null && taskRepository.existsById(task.getTaskId())) {
-       taskRepository.deleteById(task.getTaskId());
-    return true;
+  public HttpStatus modifyTask(Task task) {
+    if (!validateTask(task) || task.getTaskId() == null) return HttpStatus.BAD_REQUEST;
+    if (taskRepository.existsById(task.getTaskId())) {
+      taskRepository.save(task);
+      return HttpStatus.OK;
+    }
+    return HttpStatus.NOT_FOUND;
+  }
+
+  public boolean deleteTask(Long taskId) {
+    if (taskId != null && taskRepository.existsById(taskId)) {
+      taskRepository.deleteById(taskId);
+      return true;
     }
     return false;
   }
 
   public Optional<Task> getTasksByName(UserEntity user, String nameTask) {
     Optional<Task> optTask = taskRepository.findByUserAndName(user, nameTask);
-    if (userService.validateUser(user) && optTask.isPresent()) {
+    if (optTask.isPresent()) {
       return taskRepository.findByUserAndName(user, nameTask);
     }
     return Optional.empty();
@@ -78,9 +75,7 @@ public class TaskService {
 
   public Optional<Task> getTaskById(UserEntity user, Long taskId) {
     Optional<Task> optTask = taskRepository.findById(taskId);
-    if (userService.validateUser(user)
-        && optTask.isPresent()
-        && matchUsers(user, optTask.get().getUser())) {
+    if (optTask.isPresent() && matchUsers(user, optTask.get().getUser())) {
       return optTask;
     }
     return Optional.empty();
