@@ -39,7 +39,6 @@ public class UserEntity {
   @NotBlank
   @NotNull
   @Length(min = 8)
-  @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$")
   @Column(nullable = false)
   private String password;
 
