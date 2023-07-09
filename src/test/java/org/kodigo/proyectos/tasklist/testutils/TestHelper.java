@@ -7,10 +7,15 @@ import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.repositories.UserRepository;
+import org.kodigo.proyectos.tasklist.security.jwt.utils.TestUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class TestHelper {
@@ -18,14 +23,22 @@ public class TestHelper {
   @Autowired private TaskRepository taskRepository;
   @Autowired private UserRepository userRepository;
 
+  public void registerTestUser(TestRestTemplate testRestTemplate) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+    String body =
+        String.format(
+            "{\"email\": \"%s\", \"username\": \"%s\", \"password\": \"%s\"}",
+            TestUser.EMAIL.value, TestUser.USERNAME.value, TestUser.PASSWORD.value);
+
+    HttpEntity<String> request = new HttpEntity<>(body, headers);
+    testRestTemplate.exchange("/register", HttpMethod.POST, request, UserEntity.class);
+  }
+
   public void createTestData() {
-    UserEntity user =
-        UserEntity.builder()
-            .username("test")
-            .email("test@test.com")
-            .password("testpassword")
-            .build();
-    user = userRepository.save(user);
+    UserEntity user = userRepository.findByUsername(TestUser.USERNAME.value).orElseThrow();
 
     Category category1 = new Category("Test category 1", user);
     Category category2 = new Category("Test category 2", user);
@@ -265,7 +278,26 @@ public class TestHelper {
     taskRepository.save(task20);
   }
 
-  public void deleteTestData() {
-    userRepository.findByUsername("test").ifPresent(userRepository::delete);
+  public String getJWTForTestUser(TestRestTemplate testRestTemplate) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+
+    String body =
+        String.format(
+            "{\"username\": \"%s\", \"password\": \"%s\"}",
+            TestUser.USERNAME.value, TestUser.PASSWORD.value);
+
+    HttpEntity<String> loginRequest = new HttpEntity<>(body, headers);
+
+    ResponseEntity<?> response =
+        testRestTemplate.exchange(
+            "/login", HttpMethod.POST, loginRequest, new ParameterizedTypeReference<>() {});
+
+    return response.getHeaders().getFirst("Authorization");
+  }
+
+  public void deleteTestUser() {
+    userRepository.findByUsername(TestUser.USERNAME.value).ifPresent(userRepository::delete);
   }
 }
