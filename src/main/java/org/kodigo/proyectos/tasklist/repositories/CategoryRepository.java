@@ -12,5 +12,5 @@ import java.util.Optional;
 public interface CategoryRepository extends JpaRepository<Category, Long> {
   Optional<Category> findByUserAndName(UserEntity user, String name);
 
-  List<Category> findByUser(UserEntity user);
+  Optional<Category> findByUserAndCategoryId(UserEntity user, Long categoryId);
 }

@@ -7,6 +7,7 @@ import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,23 +19,23 @@ public class CategoryService {
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private TaskRepository taskRepository;
 
-  public boolean createCategory(Category category) {
-    if (notExistCategory(category.getUser(), category.getName())) {
+  public boolean createCategory(UserEntity userEntity, Category category) {
+    if (notExistCategory(userEntity, category.getName())) {
+      category.setUser(userEntity);
       categoryRepository.save(category);
       return true;
     }
     return false;
   }
 
-  public HttpStatus modifyCategory(Category category) {
+  public HttpStatus modifyCategory(UserEntity userEntity, Category category) {
     if (category.getCategoryId() == null) return HttpStatus.BAD_REQUEST;
 
-    Optional<Category> optionalCategory = categoryRepository.findById(category.getCategoryId());
+    Optional<Category> optionalCategory =
+        categoryRepository.findByUserAndCategoryId(userEntity, category.getCategoryId());
+    if (optionalCategory.isEmpty()) return HttpStatus.NOT_FOUND;
 
-    if (optionalCategory.isEmpty()) {
-      return HttpStatus.NOT_FOUND;
-    }
-    if (notExistCategory(category.getUser(), category.getName())) {
+    if (notExistCategory(userEntity, category.getName())) {
       Category categoryToModify = optionalCategory.get();
       categoryToModify.setName(category.getName());
       categoryRepository.save(categoryToModify);
@@ -44,34 +45,34 @@ public class CategoryService {
   }
 
   public boolean deleteCategory(UserEntity user, Long categoryId) {
-    Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
-    if (categoryOptional.isPresent()
-        && categoryRepository
-            .findByUserAndName(user, categoryOptional.get().getName())
-            .isPresent()) {
-      setCategoryToNullForAllRelatedTasks(categoryOptional.get());
-      categoryRepository.deleteById(categoryOptional.get().getCategoryId());
+    Optional<Category> categoryOptional = getCategoryById(user, categoryId);
+    if (categoryOptional.isPresent()) {
+      Category categoryToDelete = categoryOptional.get();
+      setCategoryToNullForAllRelatedTasks(categoryToDelete);
+      categoryRepository.delete(categoryToDelete);
       return true;
     }
     return false;
   }
 
-  public void deleteAllCategories(UserEntity user) {
+  public boolean deleteAllCategories(UserEntity user) {
     List<Category> categories = user.getCategories();
-    if (categories.isEmpty()) return;
+    if (categories.isEmpty()) return false;
 
     for (Category category : categories) {
       setCategoryToNullForAllRelatedTasks(category);
       categoryRepository.delete(category);
     }
+
+    return true;
   }
 
   public Optional<Category> getCategoryByName(UserEntity user, String categoryName) {
     return categoryRepository.findByUserAndName(user, categoryName);
   }
 
-  public List<Category> getAllCategories(UserEntity user) {
-    return categoryRepository.findByUser(user);
+  public Optional<Category> getCategoryById(UserEntity user, Long categoryId) {
+    return categoryRepository.findByUserAndCategoryId(user, categoryId);
   }
 
   public boolean notExistCategory(UserEntity user, String categoryName) {
