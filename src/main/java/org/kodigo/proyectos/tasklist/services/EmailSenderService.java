@@ -2,16 +2,17 @@ package org.kodigo.proyectos.tasklist.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 
 @Service
+@Slf4j
 public class EmailSenderService {
 
   private final String senderEmail;
@@ -19,9 +20,9 @@ public class EmailSenderService {
   private final MimeMessage message;
   private final JavaMailSender javaMailSender;
 
-  public EmailSenderService() throws MessagingException {
+  public EmailSenderService(@Autowired JavaMailSender javaMailSender) throws MessagingException {
     this.senderEmail = "listtaskapp@gmail.com";
-    this.javaMailSender = new JavaMailSenderImpl();
+    this.javaMailSender = javaMailSender;
     this.message = javaMailSender.createMimeMessage();
     this.mimeMessageHelper = new MimeMessageHelper(message, true);
   }
@@ -34,7 +35,8 @@ public class EmailSenderService {
       mimeMessageHelper.setSubject(subject);
       javaMailSender.send(message);
       return true;
-    } catch (MessagingException e) {
+    } catch (Exception e) {
+      log.error(e.getMessage());
       return false;
     }
   }
