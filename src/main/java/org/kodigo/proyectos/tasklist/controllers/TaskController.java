@@ -2,6 +2,7 @@ package org.kodigo.proyectos.tasklist.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.kodigo.proyectos.tasklist.controllers.utils.ControllerUtils;
 import org.kodigo.proyectos.tasklist.entities.Task;
@@ -49,19 +50,21 @@ public class TaskController {
 
   @Operation(summary = "Create task")
   @PostMapping
-  public ResponseEntity<Task> createTask(@RequestBody Task task) {
-    boolean created = taskService.createTask(task);
-    if (created) {
-      return ResponseEntity.created(URI.create("/" + task.getName())).body(task);
-    }
-    return ResponseEntity.badRequest().build();
+  public ResponseEntity<Task> createTask(
+      @RequestHeader HttpHeaders headers, @RequestBody @Valid Task task) {
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    Task createdTask = taskService.createTask(userEntity, task);
+    return (createdTask != null)
+        ? ResponseEntity.created(URI.create("/" + task.getTaskId())).body(task)
+        : ResponseEntity.badRequest().build();
   }
 
   @Operation(summary = "Modify task")
   @PutMapping
-  public ResponseEntity<Task> modifyTask(@RequestBody Task task) {
-
-    switch (taskService.modifyTask(task)) {
+  public ResponseEntity<Task> modifyTask(
+      @RequestHeader HttpHeaders headers, @RequestBody @Valid Task task) {
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    switch (taskService.modifyTask(userEntity, task)) {
       case OK -> {
         return ResponseEntity.ok(task);
       }
@@ -77,38 +80,37 @@ public class TaskController {
   @Operation(summary = "Deletes all tasks")
   @DeleteMapping
   public ResponseEntity<Task> deleteTasks(@RequestHeader HttpHeaders headers) {
-    UserEntity user = controllerUtils.getUserEntityFromHeaders(headers);
-    if (taskService.deleteTasks(user)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    return (taskService.deleteTasks(userEntity))
+        ? ResponseEntity.noContent().build()
+        : ResponseEntity.notFound().build();
   }
 
   @Operation(summary = "Get task by id")
   @GetMapping("/{taskId}")
   public ResponseEntity<Task> getTaskById(
-      @RequestBody UserEntity user, @PathVariable("taskId") Long taskId) {
-    Optional<Task> taskOptional = taskService.findByUserAndTaskId(user, taskId);
+      @RequestHeader HttpHeaders headers, @PathVariable Long taskId) {
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    Optional<Task> taskOptional = taskService.findByUserAndTaskId(userEntity, taskId);
     return taskOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @Operation(summary = "Set completed date to now (completed) or null (pending)")
   @PatchMapping("/{taskId}")
   public ResponseEntity<Task> changeTaskStatus(
-      @RequestBody UserEntity user, @PathVariable Long taskId) {
-    if (taskService.changeStatus(user, taskId)) {
-      Optional<Task> optTask = taskService.findByUserAndTaskId(user, taskId);
-      return ResponseEntity.ok(optTask.orElseThrow());
-    }
-    return ResponseEntity.notFound().build();
+      @RequestHeader HttpHeaders headers, @PathVariable Long taskId) {
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    Task task = taskService.changeStatus(userEntity, taskId);
+    return (task != null) ? ResponseEntity.ok(task) : ResponseEntity.notFound().build();
   }
 
   @Operation(summary = "Deletes task by Id")
   @DeleteMapping("/{taskId}")
-  public ResponseEntity<Task> deleteTask(@PathVariable Long taskId) {
-    if (taskService.deleteTask(taskId)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
+  public ResponseEntity<Task> deleteTask(
+      @RequestHeader HttpHeaders headers, @PathVariable Long taskId) {
+    UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
+    return (taskService.deleteTask(userEntity, taskId))
+        ? ResponseEntity.noContent().build()
+        : ResponseEntity.notFound().build();
   }
 }

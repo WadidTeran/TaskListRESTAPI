@@ -18,15 +18,15 @@ public class TaskService {
   @Autowired private CategoryService categoryService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(Task task) {
+  public Task createTask(UserEntity userEntity, Task task) {
     if (validateTaskFields(task) && task.getTaskId() == null) {
-      taskRepository.save(task);
-      return true;
+      task.setUser(userEntity);
+      return taskRepository.save(task);
     }
-    return false;
+    return null;
   }
 
-  public boolean changeStatus(UserEntity user, Long taskId) {
+  public Task changeStatus(UserEntity user, Long taskId) {
     Optional<Task> optTask = findByUserAndTaskId(user, taskId);
     if (optTask.isPresent()) {
       Task task = optTask.get();
@@ -34,10 +34,9 @@ public class TaskService {
       if (task.getCompletedDate() == null) task.setCompletedDate(LocalDate.now());
       else task.setCompletedDate(null);
 
-      taskRepository.save(task);
-      return true;
+      return taskRepository.save(task);
     }
-    return false;
+    return null;
   }
 
   public boolean deleteTasks(UserEntity user) {
@@ -47,17 +46,18 @@ public class TaskService {
     return true;
   }
 
-  public HttpStatus modifyTask(Task task) {
+  public HttpStatus modifyTask(UserEntity user, Task task) {
     if (!validateTaskFields(task) || task.getTaskId() == null) return HttpStatus.BAD_REQUEST;
-    if (taskRepository.existsById(task.getTaskId())) {
+
+    if (findByUserAndTaskId(user, task.getTaskId()).isEmpty()) {
       taskRepository.save(task);
       return HttpStatus.OK;
     }
     return HttpStatus.NOT_FOUND;
   }
 
-  public boolean deleteTask(Long taskId) {
-    if (taskId != null && taskRepository.existsById(taskId)) {
+  public boolean deleteTask(UserEntity user, Long taskId) {
+    if (taskId != null && findByUserAndTaskId(user, taskId).isPresent()) {
       taskRepository.deleteById(taskId);
       return true;
     }
