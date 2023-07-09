@@ -1,7 +1,6 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import org.apache.coyote.Response;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.services.CategoryService;

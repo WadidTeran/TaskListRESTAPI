@@ -3,7 +3,6 @@ package org.kodigo.proyectos.tasklist.services;
 import org.kodigo.proyectos.tasklist.entities.*;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
-import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,22 +19,22 @@ public class TaskService {
   @Autowired private CategoryRepository categoryRepository;
 
   public boolean createTask(Task task) {
-    if (validateTask(task) && task.getTaskId() == null) {
+    if (validateTaskFields(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean setCompletedDate(UserEntity user, Long taskId) {
-    Optional<Task> optTask = taskRepository.findById(taskId);
-    if (optTask.isPresent() && matchUsers(user, optTask.get().getUser())) {
-      if (optTask.get().getCompletedDate() == null) {
-        optTask.get().setCompletedDate(LocalDate.now());
-      } else {
-        optTask.get().setCompletedDate(null);
-      }
-      taskRepository.save(optTask.get());
+  public boolean changeStatus(UserEntity user, Long taskId) {
+    Optional<Task> optTask = findByUserAndTaskId(user, taskId);
+    if (optTask.isPresent()) {
+      Task task = optTask.get();
+
+      if (task.getCompletedDate() == null) task.setCompletedDate(LocalDate.now());
+      else task.setCompletedDate(null);
+
+      taskRepository.save(task);
       return true;
     }
     return false;
@@ -49,7 +48,7 @@ public class TaskService {
   }
 
   public HttpStatus modifyTask(Task task) {
-    if (!validateTask(task) || task.getTaskId() == null) return HttpStatus.BAD_REQUEST;
+    if (!validateTaskFields(task) || task.getTaskId() == null) return HttpStatus.BAD_REQUEST;
     if (taskRepository.existsById(task.getTaskId())) {
       taskRepository.save(task);
       return HttpStatus.OK;
@@ -65,23 +64,7 @@ public class TaskService {
     return false;
   }
 
-  public Optional<Task> getTasksByName(UserEntity user, String nameTask) {
-    Optional<Task> optTask = taskRepository.findByUserAndName(user, nameTask);
-    if (optTask.isPresent()) {
-      return taskRepository.findByUserAndName(user, nameTask);
-    }
-    return Optional.empty();
-  }
-
-  public Optional<Task> getTaskById(UserEntity user, Long taskId) {
-    Optional<Task> optTask = taskRepository.findById(taskId);
-    if (optTask.isPresent() && matchUsers(user, optTask.get().getUser())) {
-      return optTask;
-    }
-    return Optional.empty();
-  }
-
-  private boolean validateTask(Task task) {
+  private boolean validateTaskFields(Task task) {
     Long categoryId = task.getCategory() != null ? task.getCategory().getCategoryId() : null;
     RepeatConfig repeatConfig = task.getRepeatConfig();
     return !((categoryId != null && !categoryRepository.existsById(categoryId))
@@ -302,7 +285,7 @@ public class TaskService {
             && due.equals(ParamStrings.FUTURE.value));
   }
 
-  private boolean matchUsers(UserEntity taskUser, UserEntity realUser) {
-    return taskUser.getUserId().equals(realUser.getUserId());
+  public Optional<Task> findByUserAndTaskId(UserEntity user, Long taskId) {
+    return taskRepository.findByUserAndTaskId(user, taskId);
   }
 }

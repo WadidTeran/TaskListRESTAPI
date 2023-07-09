@@ -8,7 +8,6 @@ import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +25,7 @@ public class TaskController {
   @Autowired private ControllerUtils controllerUtils;
 
   @Operation(summary = "Gets a list of tasks according to query params")
-  @PostMapping("/list")
+  @GetMapping
   public ResponseEntity<List<Task>> getTaskList(
       @RequestHeader HttpHeaders headers,
       @Parameter(description = "Task status query param: {completed, pending}") @RequestParam
@@ -46,30 +45,6 @@ public class TaskController {
       return tasks.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(tasks);
     }
     return ResponseEntity.badRequest().build();
-  }
-
-  @Operation(summary = "Get task by name")
-  @PostMapping("/ByName/{taskName}")
-  public ResponseEntity<Task> getTaskByName(
-      @RequestBody UserEntity user, @PathVariable("taskName") String taskName) {
-    if (taskName.isBlank() || taskName.isEmpty()) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-    Optional<Task> taskOptional = taskService.getTasksByName(user, taskName);
-    return taskOptional
-        .map(task -> new ResponseEntity<>(task, null, HttpStatus.OK))
-        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
-  }
-
-  @Operation(summary = "Get task by id")
-  @PostMapping("/ById/{taskId}")
-  public ResponseEntity<Task> getTaskById(
-      @RequestBody UserEntity user, @PathVariable("taskId") Long taskId) {
-
-    Optional<Task> taskOptional = taskService.getTaskById(user, taskId);
-    return taskOptional
-        .map(task -> new ResponseEntity<>(task, null, HttpStatus.OK))
-        .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
   }
 
   @Operation(summary = "Create task")
@@ -99,12 +74,30 @@ public class TaskController {
     }
   }
 
-  @Operation(summary = "Set completed date to now (completed) or null (pending) by Id")
+  @Operation(summary = "Deletes all tasks")
+  @DeleteMapping
+  public ResponseEntity<Task> deleteTasks(@RequestHeader HttpHeaders headers) {
+    UserEntity user = controllerUtils.getUserEntityFromHeaders(headers);
+    if (taskService.deleteTasks(user)) {
+      return ResponseEntity.noContent().build();
+    }
+    return ResponseEntity.notFound().build();
+  }
+
+  @Operation(summary = "Get task by id")
+  @GetMapping("/{taskId}")
+  public ResponseEntity<Task> getTaskById(
+      @RequestBody UserEntity user, @PathVariable("taskId") Long taskId) {
+    Optional<Task> taskOptional = taskService.findByUserAndTaskId(user, taskId);
+    return taskOptional.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  @Operation(summary = "Set completed date to now (completed) or null (pending)")
   @PatchMapping("/{taskId}")
-  public ResponseEntity<Task> updateTaskStatus(
+  public ResponseEntity<Task> changeTaskStatus(
       @RequestBody UserEntity user, @PathVariable Long taskId) {
-    if (taskService.setCompletedDate(user, taskId)) {
-      Optional<Task> optTask = taskService.getTaskById(user, taskId);
+    if (taskService.changeStatus(user, taskId)) {
+      Optional<Task> optTask = taskService.findByUserAndTaskId(user, taskId);
       return ResponseEntity.ok(optTask.orElseThrow());
     }
     return ResponseEntity.notFound().build();
@@ -114,16 +107,6 @@ public class TaskController {
   @DeleteMapping("/{taskId}")
   public ResponseEntity<Task> deleteTask(@PathVariable Long taskId) {
     if (taskService.deleteTask(taskId)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
-  }
-
-  @Operation(summary = "Deletes all tasks")
-  @DeleteMapping
-  public ResponseEntity<Task> deleteTasks(@RequestHeader HttpHeaders headers) {
-    UserEntity user = controllerUtils.getUserEntityFromHeaders(headers);
-    if (taskService.deleteTasks(user)) {
       return ResponseEntity.noContent().build();
     }
     return ResponseEntity.notFound().build();
