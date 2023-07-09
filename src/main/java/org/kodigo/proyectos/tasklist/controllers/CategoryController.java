@@ -1,6 +1,7 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.apache.coyote.Response;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.services.CategoryService;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ public class CategoryController {
   public ResponseEntity<List<Category>> getCategories(@RequestBody UserEntity user) {
     List<Category> categories = categoryService.getAllCategories(user);
     if (!categories.isEmpty()) {
-      return new ResponseEntity<>(categories, HttpStatus.OK);
+      return ResponseEntity.ok(categories);
     }
     return ResponseEntity.notFound().build();
   }
@@ -41,9 +43,7 @@ public class CategoryController {
   @PostMapping
   public ResponseEntity<Category> createCategory(@RequestBody Category category) {
     if (categoryService.createCategory(category)) {
-      Category categoryToShow =
-          categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
-      return new ResponseEntity<>(categoryToShow, HttpStatus.CREATED);
+      return ResponseEntity.created(URI.create("/" + category.getCategoryId())).build();
     }
     return ResponseEntity.badRequest().build();
   }
@@ -53,9 +53,7 @@ public class CategoryController {
   public ResponseEntity<Category> modifyCategory(@RequestBody Category category) {
     switch (categoryService.modifyCategory(category)) {
       case OK -> {
-        Category categoryToShow =
-            categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
-        return new ResponseEntity<>(categoryToShow, HttpStatus.OK);
+        return ResponseEntity.ok().build();
       }
       case NOT_FOUND -> {
         return ResponseEntity.notFound().build();

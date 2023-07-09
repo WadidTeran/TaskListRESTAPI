@@ -11,6 +11,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,6 +30,8 @@ public class Category {
   private Long categoryId;
 
   @NotBlank
+  @NotNull
+  @NotEmpty
   @Size(max = 30)
   @Column(nullable = false)
   private String name;
@@ -40,7 +44,7 @@ public class Category {
   @OneToMany(mappedBy = "category")
   private List<Task> tasks;
 
-  public Category(String name, UserEntity user) {
+  public Category(@NotNull String name, UserEntity user) {
     this.name = name;
     this.user = user;
   }
