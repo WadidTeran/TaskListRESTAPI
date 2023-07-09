@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -25,6 +27,8 @@ public class Category {
   @Column(name = "category_id")
   private Long categoryId;
 
+  @NotBlank
+  @Size(max = 30)
   @Column(nullable = false)
   private String name;
 

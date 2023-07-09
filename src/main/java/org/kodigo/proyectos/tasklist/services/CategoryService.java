@@ -17,12 +17,9 @@ public class CategoryService {
 
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private TaskRepository taskRepository;
-  @Autowired private UserService userService;
 
   public boolean createCategory(Category category) {
-    if (userService.validateUser(category.getUser())
-            && notExistCategory(category.getUser(), category.getName())
-            && validateCategory(category)) {
+    if (notExistCategory(category.getUser(), category.getName()) && validateCategory(category)) {
       category.setUser(category.getUser());
       categoryRepository.save(category);
       return true;
@@ -32,7 +29,7 @@ public class CategoryService {
 
   public HttpStatus modifyCategory(Category category) {
     Optional<Category> optionalCategory = categoryRepository.findById(category.getCategoryId());
-    if (optionalCategory.isEmpty() || userService.validateUser(category.getUser())) {
+    if (optionalCategory.isEmpty()) {
       return HttpStatus.NOT_FOUND;
     }
     if (validateCategory(category) && notExistCategory(category.getUser(), category.getName())) {
@@ -46,8 +43,9 @@ public class CategoryService {
   public boolean deleteCategory(UserEntity user, Long categoryId) {
     Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
     if (categoryOptional.isPresent()
-            && categoryRepository.findByUserAndName(user, categoryOptional.get().getName()).isPresent()
-            && userService.validateUser(user)) {
+        && categoryRepository
+            .findByUserAndName(user, categoryOptional.get().getName())
+            .isPresent()) {
       for (Task task : categoryOptional.get().getTasks()) {
         task.setCategory(null);
         taskRepository.save(task);
@@ -58,15 +56,10 @@ public class CategoryService {
     return false;
   }
 
-  public boolean deleteAllCategories(UserEntity user) {
-    if (userService.validateUser(user)) {
-      user.setCategories(getAllCategories(user));
-      for (Category category : user.getCategories()) {
-        deleteCategory(user, category.getCategoryId());
-      }
-      return true;
+  public void deleteAllCategories(UserEntity user) {
+    for (Category category : user.getCategories()) {
+      deleteCategory(user, category.getCategoryId());
     }
-    return false;
   }
 
   public Optional<Category> getCategoryByName(UserEntity user, String categoryName) {
@@ -84,7 +77,7 @@ public class CategoryService {
 
   private boolean validateCategory(Category category) {
     return (category.getName() != null
-            && !category.getName().isBlank()
-            && !category.getName().isEmpty());
+        && !category.getName().isBlank()
+        && !category.getName().isEmpty());
   }
 }

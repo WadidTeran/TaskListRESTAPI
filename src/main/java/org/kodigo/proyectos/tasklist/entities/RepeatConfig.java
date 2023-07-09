@@ -8,6 +8,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.EnumType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -23,17 +26,21 @@ public class RepeatConfig {
   @Column(name = "repeat_config_id")
   private Long repeatConfigId;
 
+  @NotNull
   @Column(name = "repeat_type", nullable = false)
   @Enumerated(EnumType.STRING)
   private RepeatType repeatType;
 
+  @NotNull
+  @Min(1)
   @Column(name = "repeat_interval", nullable = false)
   private Integer repeatInterval;
 
   @Column(name = "repeat_ends_at")
   private LocalDate repeatEndsAt;
 
-  public RepeatConfig(RepeatType repeatType, Integer repeatInterval, LocalDate repeatEndsAt) {
+  public RepeatConfig(
+          @NotNull RepeatType repeatType, @Valid @NotNull Integer repeatInterval, LocalDate repeatEndsAt) {
     this.repeatType = repeatType;
     this.repeatInterval = repeatInterval;
     this.repeatEndsAt = repeatEndsAt;

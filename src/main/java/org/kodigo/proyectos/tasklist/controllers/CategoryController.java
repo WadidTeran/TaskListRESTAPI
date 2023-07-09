@@ -20,11 +20,11 @@ public class CategoryController {
   @Operation(summary = "Get category by name")
   @GetMapping("/{categoryName}")
   public ResponseEntity<Category> getCategoryByName(
-          @RequestBody UserEntity user, @PathVariable String categoryName) {
+      @RequestBody UserEntity user, @PathVariable String categoryName) {
     Optional<Category> optionalCategory = categoryService.getCategoryByName(user, categoryName);
     return optionalCategory
-            .map(category -> new ResponseEntity<>(category, HttpStatus.OK))
-            .orElseGet(() -> ResponseEntity.notFound().build());
+        .map(category -> new ResponseEntity<>(category, HttpStatus.OK))
+        .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
   @Operation(summary = "Get all categories of the user")
@@ -42,7 +42,7 @@ public class CategoryController {
   public ResponseEntity<Category> createCategory(@RequestBody Category category) {
     if (categoryService.createCategory(category)) {
       Category categoryToShow =
-              categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
+          categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
       return new ResponseEntity<>(categoryToShow, HttpStatus.CREATED);
     }
     return ResponseEntity.badRequest().build();
@@ -54,7 +54,7 @@ public class CategoryController {
     switch (categoryService.modifyCategory(category)) {
       case OK -> {
         Category categoryToShow =
-                categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
+            categoryService.getCategoryByName(category.getUser(), category.getName()).orElseThrow();
         return new ResponseEntity<>(categoryToShow, HttpStatus.OK);
       }
       case NOT_FOUND -> {
@@ -69,7 +69,7 @@ public class CategoryController {
   @Operation(summary = "Delete specific category by Id and sets to null all related tasks")
   @DeleteMapping("/{categoryId}")
   public ResponseEntity<Category> deleteCategory(
-          @RequestBody UserEntity user, @PathVariable Long categoryId) {
+      @RequestBody UserEntity user, @PathVariable Long categoryId) {
     if (categoryService.deleteCategory(user, categoryId)) {
       return ResponseEntity.noContent().build();
     }
@@ -79,9 +79,7 @@ public class CategoryController {
   @Operation(summary = "Delete all categories of the user")
   @DeleteMapping
   public ResponseEntity<Category> deleteCategories(@RequestBody UserEntity user) {
-    if (categoryService.deleteAllCategories(user)) {
-      return ResponseEntity.noContent().build();
-    }
-    return ResponseEntity.notFound().build();
+    categoryService.deleteAllCategories(user);
+    return ResponseEntity.noContent().build();
   }
 }

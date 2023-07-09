@@ -18,26 +18,14 @@ public class TaskService {
   @Autowired private TaskRepository taskRepository;
   @Autowired private UserRepository userRepository;
   @Autowired private CategoryService categoryService;
-  @Autowired private UserService userService;
   @Autowired private CategoryRepository categoryRepository;
 
-  public boolean createTask(UserEntity user, Task task) {
-    if (userService.validateUser(user) && validateTask(task)) {
+  public boolean createTask(Task task) {
+    if (validateTask(task) && task.getTaskId() == null) {
       taskRepository.save(task);
       return true;
     }
     return false;
-  }
-
-  public HttpStatus modifyTask(UserEntity user, Task task) {
-    if (!validateTask(task)) {
-      return HttpStatus.BAD_REQUEST;
-    }
-    if (userService.validateUser(user) && taskRepository.existsById(task.getTaskId())) {
-      taskRepository.save(task);
-      return HttpStatus.OK;
-    }
-    return HttpStatus.NOT_FOUND;
   }
 
   public boolean setCompletedDate(UserEntity user, Long taskId) {
@@ -56,26 +44,26 @@ public class TaskService {
     return false;
   }
 
-  public boolean deleteTaskById(UserEntity user, Long taskId) {
-    Optional<Task> optTask = taskRepository.findById(taskId);
-    if (userService.validateUser(user)
-        && optTask.isPresent()
-        && matchUsers(user, optTask.get().getUser())) {
-      taskRepository.deleteById(taskId);
+ public void deleteTasks(
+      UserEntity user) {
+	  List<Task> tasks= user.getTasks();
+    tasks.forEach(taskRepository::delete);
+      }
+
+  public boolean modifyTask(Task task) {
+    if (validateTask(task)
+        && task.getTaskId() != null
+        && taskRepository.existsById(task.getTaskId())) {
+      taskRepository.save(task);
       return true;
     }
     return false;
   }
 
-  public boolean deleteTasks(
-      UserEntity user, String status, String due, String relevance, String category) {
-
-    Optional<List<Task>> optTasks = getTaskList(user, status, due, relevance, category);
-    if (optTasks.isPresent()) {
-      for (Task task : optTasks.get()) {
-        taskRepository.delete(task);
-      }
-      return true;
+  public boolean deleteTask(Task task) {
+    if (task.getTaskId()!=null && taskRepository.existsById(task.getTaskId())) {
+       taskRepository.deleteById(task.getTaskId());
+    return true;
     }
     return false;
   }
@@ -99,17 +87,11 @@ public class TaskService {
   }
 
   private boolean validateTask(Task task) {
-    String taskName = task.getName();
     Long categoryId = task.getCategory() != null ? task.getCategory().getCategoryId() : null;
     RepeatConfig repeatConfig = task.getRepeatConfig();
-    return !(taskName == null
-        || taskName.isEmpty()
-        || taskName.isBlank()
-        || (categoryId != null && !categoryRepository.existsById(categoryId))
+    return !((categoryId != null && !categoryRepository.existsById(categoryId))
         || (repeatConfig != null
             && (task.getDueDate() == null
-                || repeatConfig.getRepeatInterval() == null
-                || repeatConfig.getRepeatType() == null
                 || (repeatConfig.getRepeatType() == RepeatType.HOUR
                     && task.getSpecifiedTime() == null))));
   }
@@ -118,23 +100,16 @@ public class TaskService {
       UserEntity user, String status, String due, String rel, String category) {
     if (!validateParams(user, status, due, rel, category)) return Optional.empty();
 
-    if (userService.validateUser(user)) {
-      UserEntity userDB =
-          (user.getEmail() != null)
-              ? userService.getUserByEmail(user.getEmail()).orElseThrow()
-              : userService.getUserByUsername(user.getUsername()).orElseThrow();
-
-      String[] params =
-          new String[] {
-            status,
-            due,
-            (rel == null) ? null : ParamStrings.RELEVANCE.value,
-            (category == null) ? null : ParamStrings.CATEGORY.value
-          };
-      for (TaskQuery query : TaskQuery.values()) {
-        if (Arrays.equals(params, query.params)) {
-          return executeTaskQuery(query, userDB, rel, category);
-        }
+    String[] params =
+        new String[] {
+          status,
+          due,
+          (rel == null) ? null : ParamStrings.RELEVANCE.value,
+          (category == null) ? null : ParamStrings.CATEGORY.value
+        };
+    for (TaskQuery query : TaskQuery.values()) {
+      if (Arrays.equals(params, query.params)) {
+        return executeTaskQuery(query, user, rel, category);
       }
     }
 

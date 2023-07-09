@@ -19,7 +19,12 @@ public class TestHelper {
   @Autowired private UserRepository userRepository;
 
   public void createTestData() {
-    UserEntity user = new UserEntity("test", "test@test.com", "testpassword");
+    UserEntity user =
+        UserEntity.builder()
+            .username("test")
+            .email("test@test.com")
+            .password("testpassword")
+            .build();
     user = userRepository.save(user);
 
     Category category1 = new Category("Test category 1", user);
