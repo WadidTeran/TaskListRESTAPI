@@ -97,7 +97,7 @@ public class TaskController {
   }
 
   @Operation(summary = "Set completed date to now (completed) or null (pending)")
-  @PatchMapping("/{taskId}")
+  @PutMapping("/{taskId}")
   public ResponseEntity<Task> changeTaskStatus(
       @RequestHeader HttpHeaders headers, @PathVariable Long taskId) {
     UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);

@@ -1,6 +1,7 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.services.TaskService;
 import org.kodigo.proyectos.tasklist.testutils.TestHelper;
@@ -27,24 +28,31 @@ class TaskControllerTest {
     testRestTemplate = new TestRestTemplate(restTemplateBuilder);
   }
 
+  @DisplayName("GET /tasks")
   @Test
   void getTaskList() {}
 
+  @DisplayName("POST /tasks")
   @Test
   void createTask() {}
 
+  @DisplayName("PUT /tasks")
   @Test
   void modifyTask() {}
 
+  @DisplayName("DELETE /tasks")
   @Test
   void deleteTasks() {}
 
+  @DisplayName("GET /tasks/{taskId}")
   @Test
   void getTaskById() {}
 
+  @DisplayName("PUT /tasks/{taskId}")
   @Test
   void changeTaskStatus() {}
 
+  @DisplayName("DELETE /tasks/{taskId}")
   @Test
   void deleteTask() {}
 }
