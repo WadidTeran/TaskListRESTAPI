@@ -3,13 +3,12 @@ package org.kodigo.proyectos.tasklist.services;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.nio.file.Files;
 
 @Service
 public class EmailSenderService {
@@ -19,9 +18,9 @@ public class EmailSenderService {
   private final MimeMessage message;
   private final JavaMailSender javaMailSender;
 
-  public EmailSenderService() throws MessagingException {
+  public EmailSenderService(@Autowired JavaMailSender javaMailSender) throws MessagingException {
     this.senderEmail = "listtaskapp@gmail.com";
-    this.javaMailSender = new JavaMailSenderImpl();
+    this.javaMailSender = javaMailSender;
     this.message = javaMailSender.createMimeMessage();
     this.mimeMessageHelper = new MimeMessageHelper(message, true);
   }
@@ -34,7 +33,7 @@ public class EmailSenderService {
       mimeMessageHelper.setSubject(subject);
       javaMailSender.send(message);
       return true;
-    } catch (MessagingException e) {
+    } catch (Exception e) {
       return false;
     }
   }
@@ -46,15 +45,16 @@ public class EmailSenderService {
       mimeMessageHelper.setTo(receiverEmail);
       mimeMessageHelper.setText(textBody);
       mimeMessageHelper.setSubject(subject);
-      FileSystemResource fileSystemResource = new FileSystemResource(new File(fileDataSource));
-      if (fileSystemResource.exists()) {
-        mimeMessageHelper.addAttachment(fileSystemResource.getFilename(), fileSystemResource);
+      File file = new File(fileDataSource);
+      if (file.exists()) {
+        mimeMessageHelper.addAttachment(file.getName(), file);
       } else {
         return false;
       }
       javaMailSender.send(message);
+      Files.delete(file.toPath());
       return true;
-    } catch (MessagingException e) {
+    } catch (Exception e) {
       return false;
     }
   }

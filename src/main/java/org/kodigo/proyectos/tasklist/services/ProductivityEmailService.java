@@ -1,7 +1,7 @@
 package org.kodigo.proyectos.tasklist.services;
 
 import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.User;
+import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.dtos.RangeDates;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ public class ProductivityEmailService {
         .toList();
   }
 
-  public boolean sendProductivityEmail(User user, String startDateStr, String endDateStr) {
+  public boolean sendProductivityEmail(UserEntity user, String startDateStr, String endDateStr) {
     Optional<RangeDates> optRangeDates = convertToRangeDates(startDateStr, endDateStr);
     if (optRangeDates.isPresent()) {
       try (ExecutorService executor = Executors.newSingleThreadExecutor()) {
@@ -44,7 +44,7 @@ public class ProductivityEmailService {
     return false;
   }
 
-  private void sendingRunnable(User user, RangeDates rangeDates) {
+  private void sendingRunnable(UserEntity user, RangeDates rangeDates) {
     List<Task> tasks =
         filterCompletedTasksByDate(
             taskRepository.findByUserAndCompletedDateIsNotNullOrderByCompletedDateDesc(user),

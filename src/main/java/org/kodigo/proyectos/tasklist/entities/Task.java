@@ -1,6 +1,6 @@
 package org.kodigo.proyectos.tasklist.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -13,6 +13,10 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,20 +33,26 @@ public class Task {
   @Column(name = "task_id")
   private Long taskId;
 
-  @JsonIgnore
+  @JsonIgnoreProperties(value = {"username", "password", "email"})
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
-  private User user;
+  private UserEntity user;
 
+  @NotBlank
+  @NotEmpty
+  @NotNull
+  @Size(max = 50)
   @Column(nullable = false)
   private String name;
 
+  @Size(max = 300)
   private String description;
 
   @ManyToOne
   @JoinColumn(name = "category_id")
   private Category category;
 
+  @NotNull
   @Enumerated(EnumType.STRING)
   private Relevance relevance;
 
@@ -60,11 +70,11 @@ public class Task {
   private RepeatConfig repeatConfig;
 
   public Task(
-      User user,
-      String name,
+      UserEntity user,
+      @NotNull String name,
       String description,
       Category category,
-      Relevance relevance,
+      @NotNull Relevance relevance,
       LocalDate dueDate,
       LocalTime specifiedTime,
       RepeatConfig repeatConfig) {
