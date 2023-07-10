@@ -21,7 +21,7 @@ public class UserController {
   }
 
   @Operation(summary = "Modify account by specific instructions")
-  @PatchMapping("/account")
+  @PostMapping("/account")
   public ResponseEntity<UserEntity> modifyAccount(
       @RequestHeader HttpHeaders headers, @RequestBody @Valid UserEntity user) {
     return (userService.modifyUser(controllerUtils.getUserEntityFromHeaders(headers), user))

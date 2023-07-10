@@ -31,7 +31,7 @@ public class UserService {
             && getUserByUsername(newUser.getUsername()).isPresent())
         || (!oldUser.getEmail().equals(newUser.getEmail())
             && getUserByEmail(newUser.getEmail()).isPresent())) return false;
-
+    newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
     saveUser(newUser);
     return true;
   }
