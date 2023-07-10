@@ -39,9 +39,43 @@ class UserControllerTest {
   @Test
   void getUserEntity() {}
 
-  @DisplayName("PATCH /account")
+  @DisplayName("POST /account")
   @Test
-  void modifyAccount() {}
+  void modifyAccount() {
+    testHelper.registerTestUser(testRestTemplate);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    String body1 =
+        String.format(
+            "{\"userId\": \"%d\",\"email\": \"%s\", \"username\": \"%s\", \"password\": \"%s\"}",
+            userEntity.getUserId(),
+            "newemail@test.com",
+            TestUser.USERNAME.value,
+            TestUser.PASSWORD.value);
+    String body2 =
+        String.format(
+            "{\"userId\": \"%d\",\"email\": \"%s\", \"username\": \"%s\", \"password\": \"%s\"}",
+            userEntity.getUserId(), TestUser.EMAIL.value, "new_username", TestUser.PASSWORD.value);
+
+    HttpEntity<String> request1 = new HttpEntity<>(body1, headers);
+    HttpEntity<String> request2 = new HttpEntity<>(body2, headers);
+    ResponseEntity<UserEntity> response1 =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request1, UserEntity.class);
+    assertEquals(HttpStatus.OK, response1.getStatusCode());
+
+    Optional<UserEntity> userOpt = userService.getUserByEmail("newemail@test.com");
+    assertTrue(userOpt.isPresent());
+
+    ResponseEntity<UserEntity> response2 =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request2, UserEntity.class);
+    assertEquals(HttpStatus.OK, response2.getStatusCode());
+
+    UserEntity user2 = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    assertEquals("new_username", user2.getUsername());
+
+    userService.deleteUser(user2);
+  }
 
   @DisplayName("DELETE /account")
   @Test
