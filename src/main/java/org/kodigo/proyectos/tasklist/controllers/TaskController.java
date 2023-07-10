@@ -66,7 +66,8 @@ public class TaskController {
     UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
     switch (taskService.modifyTask(userEntity, task)) {
       case OK -> {
-        return ResponseEntity.ok(task);
+        return ResponseEntity.ok(
+            taskService.findByUserAndTaskId(userEntity, task.getTaskId()).orElseThrow());
       }
       case BAD_REQUEST -> {
         return ResponseEntity.badRequest().build();

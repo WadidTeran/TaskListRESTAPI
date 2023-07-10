@@ -1,5 +1,6 @@
 package org.kodigo.proyectos.tasklist.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -32,6 +33,7 @@ public class Task {
   @Column(name = "task_id")
   private Long taskId;
 
+  @JsonIgnore
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private UserEntity user;
