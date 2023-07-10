@@ -1,7 +1,6 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
