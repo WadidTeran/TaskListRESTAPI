@@ -37,7 +37,8 @@ public class CategoryController {
       @RequestHeader HttpHeaders headers, @RequestBody @Valid Category category) {
     UserEntity userEntity = controllerUtils.getUserEntityFromHeaders(headers);
     return (categoryService.createCategory(userEntity, category))
-        ? ResponseEntity.created(URI.create("/" + category.getCategoryId())).build()
+        ? ResponseEntity.created(URI.create("/" + category.getCategoryId()))
+            .body(categoryService.getCategoryByName(userEntity, category.getName()).orElseThrow())
         : ResponseEntity.badRequest().build();
   }
 
