@@ -49,7 +49,7 @@ public class TaskService {
   public HttpStatus modifyTask(UserEntity user, Task task) {
     if (!validateTaskFields(task) || task.getTaskId() == null) return HttpStatus.BAD_REQUEST;
 
-    if (findByUserAndTaskId(user, task.getTaskId()).isEmpty()) {
+    if (findByUserAndTaskId(user, task.getTaskId()).isPresent()) {
       taskRepository.save(task);
       return HttpStatus.OK;
     }
