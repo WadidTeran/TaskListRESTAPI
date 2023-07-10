@@ -6,9 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.kodigo.proyectos.tasklist.entities.Relevance;
-import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.UserEntity;
+import org.kodigo.proyectos.tasklist.entities.*;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.services.TaskService;
@@ -1184,15 +1182,24 @@ class TaskControllerTest {
     UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
     Task createdTask =
         new Task(userEntity, "New task", null, null, Relevance.NONE, LocalDate.now(), null, null);
+    Task badCreatedTask =
+        new Task(userEntity, "New task", null, null, Relevance.NONE, LocalDate.now(), null, null);
+    badCreatedTask.setTaskId(1L);
     String body = objectMapper.writeValueAsString(createdTask);
+    String badBody = objectMapper.writeValueAsString(badCreatedTask);
 
     HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+
     HttpEntity<String> request = new HttpEntity<>(body, headers);
+    HttpEntity<String> badRequest = new HttpEntity<>(badBody, headers);
 
     ResponseEntity<Task> response =
         testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Task.class);
+    ResponseEntity<Task> badResponse =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, badRequest, Task.class);
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, badResponse.getStatusCode());
 
     UserEntity userEntityN = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
     Task createdTaskDB =
@@ -1218,17 +1225,36 @@ class TaskControllerTest {
     HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
     Task modifiedTask =
         taskRepository
-            .findByUserAndTaskId(userEntity, userEntity.getTasks().get(0).getTaskId())
+            .findByUserAndTaskId(
+                userEntity, userEntity.getTasks().get(userEntity.getTasks().size() - 1).getTaskId())
             .orElseThrow();
 
+    RepeatConfig repeatConfig = new RepeatConfig(RepeatType.HOUR, 3, null);
+    Task badTask =
+        new Task(userEntity, "bad task", null, null, Relevance.NONE, null, null, repeatConfig);
     modifiedTask.setName("ModifiedTask");
     String body = objectMapper.writeValueAsString(modifiedTask);
+    String badBody = objectMapper.writeValueAsString(badTask);
+
+    modifiedTask.setTaskId(modifiedTask.getTaskId() + 1L);
+    String badBody2 = objectMapper.writeValueAsString(modifiedTask);
+
     HttpEntity<String> request = new HttpEntity<>(body, headers);
+    HttpEntity<String> badRequest = new HttpEntity<>(badBody, headers);
+    HttpEntity<String> badRequest2 = new HttpEntity<>(badBody2, headers);
 
     ResponseEntity<Task> response =
         testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request, Task.class);
 
+    ResponseEntity<Task> badResponse =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, badRequest, Task.class);
+
+    ResponseEntity<Task> badResponse2 =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, badRequest2, Task.class);
+
     assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, badResponse.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, badResponse2.getStatusCode());
     assertEquals(modifiedTask.getName(), response.getBody().getName());
 
     testHelper.deleteTestUser();
@@ -1334,16 +1360,21 @@ class TaskControllerTest {
     UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
     Long id = userEntity.getTasks().get(0).getTaskId();
+    Long fakeId = userEntity.getTasks().get(userEntity.getTasks().size() - 1).getTaskId() + 1L;
 
     ResponseEntity<Task> response =
         testRestTemplate.exchange(
             BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
-
-    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    ResponseEntity<Task> badResponse =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", fakeId)), HttpMethod.DELETE, request, Task.class);
 
     Optional<Task> deletedTask = taskService.findByUserAndTaskId(userEntity, id);
 
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, badResponse.getStatusCode());
     assertTrue(deletedTask.isEmpty());
+
     testHelper.deleteTestUser();
   }
 }
