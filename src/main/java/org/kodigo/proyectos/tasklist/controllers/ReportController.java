@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/report")
+@RequestMapping("/reports")
 public class ReportController {
 
   @Autowired private ControllerUtils controllerUtils;

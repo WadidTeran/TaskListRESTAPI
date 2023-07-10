@@ -5,7 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
-import org.kodigo.proyectos.tasklist.security.jwt.utils.TestUser;
+import org.kodigo.proyectos.tasklist.testutils.TestUser;
 import org.kodigo.proyectos.tasklist.services.CategoryService;
 import org.kodigo.proyectos.tasklist.services.UserService;
 import org.kodigo.proyectos.tasklist.testutils.TestHelper;

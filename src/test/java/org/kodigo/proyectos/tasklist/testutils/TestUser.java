@@ -1,4 +1,4 @@
-package org.kodigo.proyectos.tasklist.security.jwt.utils;
+package org.kodigo.proyectos.tasklist.testutils;
 
 public enum TestUser {
   EMAIL("test@gmail.com"),

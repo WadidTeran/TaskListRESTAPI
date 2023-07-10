@@ -6,7 +6,6 @@ import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
-import org.kodigo.proyectos.tasklist.security.jwt.utils.TestUser;
 import org.kodigo.proyectos.tasklist.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
