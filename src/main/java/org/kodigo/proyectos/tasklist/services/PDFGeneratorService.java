@@ -37,40 +37,6 @@ public class PDFGeneratorService {
     return title;
   }
 
-  public void generateBasicPDF(String title, String textBody) {
-
-    try {
-      String path = new File(".").getCanonicalPath();
-      String fileName = path + nameDocument;
-
-      PdfWriter.getInstance(document, new FileOutputStream(fileName));
-
-      document.open();
-      Paragraph pdfTitle = new Paragraph(title);
-      pdfTitle.setAlignment(Element.ALIGN_JUSTIFIED);
-
-      Paragraph body = new Paragraph(textBody);
-
-      Paragraph p3 = new Paragraph("Task-List");
-
-      Font f = new Font();
-      f.setFamily(Font.FontFamily.COURIER.name());
-      f.setStyle(Font.BOLDITALIC);
-      f.setSize(8);
-
-      p3.setFont(f);
-      f.setSize(10);
-
-      document.add(pdfTitle);
-      document.add(body);
-      document.add(p3);
-      document.close();
-    } catch (Exception ex) {
-      Logger.getLogger(PDFGeneratorService.class.getName())
-          .log(Level.SEVERE, " Error trying to generate a document ", ex);
-    }
-  }
-
   public void generateProductivityPDF(List<Task> tasks, RangeDates rangeDates) {
 
     try {
