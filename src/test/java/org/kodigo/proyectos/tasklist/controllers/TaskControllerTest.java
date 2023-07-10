@@ -20,7 +20,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-
+import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -128,5 +128,26 @@ class TaskControllerTest {
 
   @DisplayName("DELETE /tasks/{taskId}")
   @Test
-  void deleteTask() {}
+  void deleteTask() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+    UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
+
+    Long id = userEntity.getTasks().get(0).getTaskId();
+
+    ResponseEntity<Task> response =
+            testRestTemplate.exchange(
+                    BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+    Optional<Task> deletedTask =
+            taskService.findByUserAndTaskId(userEntity,id);
+
+    assertTrue(deletedTask.isEmpty());
+    testHelper.deleteTestUser();
+  }
 }
