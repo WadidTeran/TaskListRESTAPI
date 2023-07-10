@@ -17,10 +17,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
-import java.lang.reflect.Type;
 import java.util.List;
-import org.springframework.http.*;
-
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,7 +40,25 @@ class CategoryControllerTest {
 
   @DisplayName("GET /categories")
   @Test
-  void getCategories() {}
+  void getCategories() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<List<Category>> response =
+        testRestTemplate.exchange(
+            BASE_URL, HttpMethod.GET, request, new ParameterizedTypeReference<>() {});
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    List<Category> userEntityCategories = userEntity.getCategories();
+    List<Category> responseBodyCategories = response.getBody();
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(userEntityCategories.size(), responseBodyCategories.size());
+    for (int i = 0; i < userEntityCategories.size(); i++) {
+      assertEquals(userEntityCategories.get(i).getName(), responseBodyCategories.get(i).getName());
+    }
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("POST /categories")
   @Test
@@ -60,12 +75,14 @@ class CategoryControllerTest {
     ResponseEntity<Category> response =
         testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Category.class);
     ResponseEntity<Category> response2 =
-        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Category.class);
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request2, Category.class);
     Category category = response.getBody();
     Category category2 = response2.getBody();
 
     assertEquals(HttpStatus.CREATED, response.getStatusCode());
     assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    assertNull(category2);
+    assertEquals("category to create", category.getName());
     testHelper.deleteTestUser();
   }
 
@@ -97,6 +114,7 @@ class CategoryControllerTest {
 
     testHelper.deleteTestUser();
   }
+
   @DisplayName("DELETE /categories")
   @Test
   void deleteCategories() {
@@ -105,7 +123,7 @@ class CategoryControllerTest {
     HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
     HttpEntity<String> request = new HttpEntity<>(null, headers);
     ResponseEntity<Category> response =
-            testRestTemplate.exchange(BASE_URL, HttpMethod.DELETE, request, Category.class);
+        testRestTemplate.exchange(BASE_URL, HttpMethod.DELETE, request, Category.class);
 
     UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
 
