@@ -1,6 +1,7 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
@@ -67,9 +68,27 @@ class CategoryControllerTest {
 
     testHelper.deleteTestUser();
   }
-
+  @DisplayName("DELETE /categories")
   @Test
-  void deleteCategories() {}
+  void deleteCategories() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<Category> response =
+            testRestTemplate.exchange(BASE_URL, HttpMethod.DELETE, request, Category.class);
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+
+    Optional<Category> category1 = categoryService.getCategoryByName(userEntity, "Test category 1");
+    Optional<Category> category2 = categoryService.getCategoryByName(userEntity, "Test category 2");
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    assertTrue(category1.isEmpty());
+    assertTrue(category2.isEmpty());
+
+    testHelper.deleteTestUser();
+  }
 
   @Test
   void getCategoryById() {
