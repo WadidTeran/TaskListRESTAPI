@@ -29,192 +29,196 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class TaskControllerTest {
-    private final String BASE_URL = "/tasks";
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private TestRestTemplate testRestTemplate;
-    @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
-    private TaskService taskService;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private TaskRepository taskRepository;
-    @LocalServerPort
-    private int port;
-    @Autowired
-    private TestHelper testHelper;
+  private final String BASE_URL = "/tasks";
+  private final ObjectMapper objectMapper = new ObjectMapper();
+  private TestRestTemplate testRestTemplate;
+  @Autowired private RestTemplateBuilder restTemplateBuilder;
+  @Autowired private TaskService taskService;
+  @Autowired private UserService userService;
+  @Autowired private TaskRepository taskRepository;
+  @LocalServerPort private int port;
+  @Autowired private TestHelper testHelper;
 
-    @BeforeEach
-    void setUp() {
-        restTemplateBuilder = restTemplateBuilder.rootUri("http://localhost:" + port);
-        testRestTemplate = new TestRestTemplate(restTemplateBuilder);
-        objectMapper.registerModule(new JavaTimeModule());
-    }
+  @BeforeEach
+  void setUp() {
+    restTemplateBuilder = restTemplateBuilder.rootUri("http://localhost:" + port);
+    testRestTemplate = new TestRestTemplate(restTemplateBuilder);
+    objectMapper.registerModule(new JavaTimeModule());
+  }
 
-    @DisplayName("GET /tasks")
-    @Test
-    void getTaskList() {
-    }
+  @DisplayName("GET /tasks")
+  @Test
+  void getTaskList() {}
 
-    @DisplayName("POST /tasks")
-    @Test
-    void createTask() throws JsonProcessingException {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
+  @DisplayName("POST /tasks")
+  @Test
+  void createTask() throws JsonProcessingException {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
 
-        UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-        Task createdTask =
-                new Task(userEntity, "New task", null, null, Relevance.NONE, LocalDate.now(), null, null);
-        String body = objectMapper.writeValueAsString(createdTask);
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Task createdTask =
+        new Task(userEntity, "New task", null, null, Relevance.NONE, LocalDate.now(), null, null);
+    String body = objectMapper.writeValueAsString(createdTask);
 
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Task> response =
-                testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Task.class);
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Task.class);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    assertEquals(HttpStatus.CREATED, response.getStatusCode());
 
-        UserEntity userEntityN = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-        Task createdTaskDB =
-                taskService
-                        .findByUserAndTaskId(
-                                userEntity,
-                                userEntityN.getTasks().get(userEntityN.getTasks().size() - 1).getTaskId())
-                        .orElseThrow();
+    UserEntity userEntityN = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Task createdTaskDB =
+        taskService
+            .findByUserAndTaskId(
+                userEntity,
+                userEntityN.getTasks().get(userEntityN.getTasks().size() - 1).getTaskId())
+            .orElseThrow();
 
-        assertEquals("New task", createdTaskDB.getName());
+    assertEquals("New task", createdTaskDB.getName());
 
-        testHelper.deleteTestUser();
-    }
+    testHelper.deleteTestUser();
+  }
 
-    @DisplayName("PUT /tasks")
-    @Test
-    void modifyTask() throws JsonProcessingException {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
+  @DisplayName("PUT /tasks")
+  @Test
+  void modifyTask() throws JsonProcessingException {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
 
-        UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
 
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        Task modifiedTask =
-                taskRepository
-                        .findByUserAndTaskId(userEntity, userEntity.getTasks().get(0).getTaskId())
-                        .orElseThrow();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    Task modifiedTask =
+        taskRepository
+            .findByUserAndTaskId(userEntity, userEntity.getTasks().get(0).getTaskId())
+            .orElseThrow();
 
-        modifiedTask.setName("ModifiedTask");
-        String body = objectMapper.writeValueAsString(modifiedTask);
-        HttpEntity<String> request = new HttpEntity<>(body, headers);
+    modifiedTask.setName("ModifiedTask");
+    String body = objectMapper.writeValueAsString(modifiedTask);
+    HttpEntity<String> request = new HttpEntity<>(body, headers);
 
-        ResponseEntity<Task> response =
-                testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request, Task.class);
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request, Task.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(modifiedTask.getName(), response.getBody().getName());
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(modifiedTask.getName(), response.getBody().getName());
 
-        testHelper.deleteTestUser();
-    }
+    testHelper.deleteTestUser();
+  }
 
-    @DisplayName("DELETE /tasks")
-    @Test
-    void deleteTasks() {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        HttpEntity<String> request = new HttpEntity<>(null, headers);
-        ResponseEntity<?> responseNoContent =
-                testRestTemplate.exchange(
-                        BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {
-                        });
-        ResponseEntity<?> responseNotFound =
-                testRestTemplate.exchange(
-                        BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {
-                        });
+  @DisplayName("DELETE /tasks")
+  @Test
+  void deleteTasks() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<?> responseNoContent =
+        testRestTemplate.exchange(
+            BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {});
+    ResponseEntity<?> responseNotFound =
+        testRestTemplate.exchange(
+            BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {});
 
-        assertEquals(HttpStatus.NO_CONTENT, responseNoContent.getStatusCode());
-        assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
-        testHelper.deleteTestUser();
-    }
+    assertEquals(HttpStatus.NO_CONTENT, responseNoContent.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
+    testHelper.deleteTestUser();
+  }
 
-    @DisplayName("GET /tasks/{taskId}")
-    @Test
-    void getTaskById() {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        HttpEntity<String> request = new HttpEntity<>(null, headers);
+  @DisplayName("GET /tasks/{taskId}")
+  @Test
+  void getTaskById() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-        UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-        Long id = userEntity.getTasks().get(0).getTaskId();
-        ResponseEntity<Task> response =
-                testRestTemplate.exchange(
-                        BASE_URL.concat(String.format("/%d", id)), HttpMethod.GET, request, Task.class);
-        ResponseEntity<Task> response2 =
-                testRestTemplate.exchange(
-                        BASE_URL.concat(String.format("/%d", -1L)), HttpMethod.GET, request, Task.class);
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Long id = userEntity.getTasks().get(0).getTaskId();
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", id)), HttpMethod.GET, request, Task.class);
+    ResponseEntity<Task> response2 =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", -1L)), HttpMethod.GET, request, Task.class);
 
-        Task responseTask = response.getBody();
+    Task responseTask = response.getBody();
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(HttpStatus.NOT_FOUND, response2.getStatusCode());
-        assertEquals(responseTask.getTaskId(), id);
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, response2.getStatusCode());
+    assertEquals(responseTask.getTaskId(), id);
 
-        testHelper.deleteTestUser();
-    }
+    testHelper.deleteTestUser();
+  }
 
-    @DisplayName("PUT /tasks/{taskId}")
-    @Test
-    void changeTaskStatus() {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        HttpEntity<String> request = new HttpEntity<>(null, headers);
+  @DisplayName("PUT /tasks/{taskId}")
+  @Test
+  void changeTaskStatus() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-        UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
+    UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
-        Long idPending = userEntity.getTasks().stream().filter(task -> task.getCompletedDate() == null).findFirst().orElseThrow().getTaskId();
-        Long idCompleted = userEntity.getTasks().stream().filter(task -> task.getCompletedDate() != null).findFirst().orElseThrow().getTaskId();
+    Long idPending =
+        userEntity.getTasks().stream()
+            .filter(task -> task.getCompletedDate() == null)
+            .findFirst()
+            .orElseThrow()
+            .getTaskId();
+    Long idCompleted =
+        userEntity.getTasks().stream()
+            .filter(task -> task.getCompletedDate() != null)
+            .findFirst()
+            .orElseThrow()
+            .getTaskId();
 
-        ResponseEntity<Task> response1 =
-                testRestTemplate.exchange(
-                        BASE_URL.concat(String.format("/%d", idPending)), HttpMethod.PUT, request, Task.class);
-        ResponseEntity<Task> response2 =
-                testRestTemplate.exchange(
-                        BASE_URL.concat(String.format("/%d", idCompleted)), HttpMethod.PUT, request, Task.class);
+    ResponseEntity<Task> response1 =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", idPending)), HttpMethod.PUT, request, Task.class);
+    ResponseEntity<Task> response2 =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", idCompleted)),
+            HttpMethod.PUT,
+            request,
+            Task.class);
 
-        assertEquals(HttpStatus.OK, response1.getStatusCode());
-        assertEquals(HttpStatus.OK, response2.getStatusCode());
+    assertEquals(HttpStatus.OK, response1.getStatusCode());
+    assertEquals(HttpStatus.OK, response2.getStatusCode());
 
-        assertNull(response2.getBody().getCompletedDate());
-        assertNotNull(response1.getBody().getCompletedDate());
+    assertNull(response2.getBody().getCompletedDate());
+    assertNotNull(response1.getBody().getCompletedDate());
 
-        assertEquals(LocalDate.now(), response1.getBody().getCompletedDate());
+    assertEquals(LocalDate.now(), response1.getBody().getCompletedDate());
 
-        testHelper.deleteTestUser();
-    }
+    testHelper.deleteTestUser();
+  }
 
-    @DisplayName("DELETE /tasks/{taskId}")
-    @Test
-    void deleteTask() {
-        testHelper.registerTestUser(testRestTemplate);
-        testHelper.createTestData();
-        HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
-        HttpEntity<String> request = new HttpEntity<>(null, headers);
+  @DisplayName("DELETE /tasks/{taskId}")
+  @Test
+  void deleteTask() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-        UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
+    UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
-        Long id = userEntity.getTasks().get(0).getTaskId();
+    Long id = userEntity.getTasks().get(0).getTaskId();
 
-        ResponseEntity<Task> response =
-                testRestTemplate.exchange(
-                        BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
 
-        assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 
-        Optional<Task> deletedTask = taskService.findByUserAndTaskId(userEntity, id);
+    Optional<Task> deletedTask = taskService.findByUserAndTaskId(userEntity, id);
 
-        assertTrue(deletedTask.isEmpty());
-        testHelper.deleteTestUser();
-    }
+    assertTrue(deletedTask.isEmpty());
+    testHelper.deleteTestUser();
+  }
 }
