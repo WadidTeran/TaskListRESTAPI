@@ -6,8 +6,8 @@ import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
-import org.kodigo.proyectos.tasklist.repositories.UserRepository;
 import org.kodigo.proyectos.tasklist.security.jwt.utils.TestUser;
+import org.kodigo.proyectos.tasklist.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -21,7 +21,7 @@ import java.util.List;
 public class TestHelper {
   @Autowired private CategoryRepository categoryRepository;
   @Autowired private TaskRepository taskRepository;
-  @Autowired private UserRepository userRepository;
+  @Autowired private UserService userService;
 
   public void registerTestUser(TestRestTemplate testRestTemplate) {
     HttpHeaders headers = new HttpHeaders();
@@ -38,7 +38,7 @@ public class TestHelper {
   }
 
   public void createTestData() {
-    UserEntity user = userRepository.findByUsername(TestUser.USERNAME.value).orElseThrow();
+    UserEntity user = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
     Category category1 = new Category("Test category 1", user);
     Category category2 = new Category("Test category 2", user);
@@ -298,7 +298,7 @@ public class TestHelper {
   }
 
   public void deleteTestUser() {
-    userRepository.findByUsername(TestUser.USERNAME.value).ifPresent(userRepository::delete);
+    userService.getUserByUsername(TestUser.USERNAME.value).ifPresent(userService::deleteUser);
   }
 
   public HttpHeaders getHeadersWithAuthenticationForTestUser(TestRestTemplate testRestTemplate) {

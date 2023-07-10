@@ -61,7 +61,7 @@ public class CategoryService {
 
     for (Category category : categories) {
       setCategoryToNullForAllRelatedTasks(category);
-      categoryRepository.delete(category);
+      categoryRepository.deleteById(category.getCategoryId());
     }
 
     return true;

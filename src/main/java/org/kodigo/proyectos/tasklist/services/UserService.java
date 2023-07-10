@@ -43,7 +43,7 @@ public class UserService {
   public void deleteUser(UserEntity user) {
     taskService.deleteTasks(user);
     categoryService.deleteAllCategories(user);
-    userRepository.delete(user);
+    userRepository.deleteById(user.getUserId());
   }
 
   public Optional<UserEntity> getUserByUsername(String username) {
