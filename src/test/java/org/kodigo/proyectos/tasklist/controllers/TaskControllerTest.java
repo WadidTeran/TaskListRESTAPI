@@ -82,7 +82,26 @@ class TaskControllerTest {
 
   @DisplayName("GET /tasks/{taskId}")
   @Test
-  void getTaskById() {}
+  void getTaskById() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", 3L)), HttpMethod.GET, request, Task.class);
+    ResponseEntity<Task> response2 =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", -1L)), HttpMethod.GET, request, Task.class);
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, response2.getStatusCode());
+
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("PUT /tasks/{taskId}")
   @Test
