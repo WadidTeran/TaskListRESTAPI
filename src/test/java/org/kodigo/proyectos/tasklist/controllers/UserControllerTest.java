@@ -67,27 +67,37 @@ class UserControllerTest {
             TestUser.USERNAME.value,
             TestUser.PASSWORD.value);
     String body2 =
+            String.format(
+                    "{\"userId\": \"%d\",\"email\": \"%s\", \"username\": \"%s\", \"password\": \"%s\"}",
+                    userEntity.getUserId() + 1L,
+                    TestUser.EMAIL.value,
+                    TestUser.USERNAME.value,
+                    TestUser.PASSWORD.value);
+    String body3 =
         String.format(
             "{\"userId\": \"%d\",\"email\": \"%s\", \"username\": \"%s\", \"password\": \"%s\"}",
             userEntity.getUserId(), TestUser.EMAIL.value, "new_username", TestUser.PASSWORD.value);
 
     HttpEntity<String> request1 = new HttpEntity<>(body1, headers);
     HttpEntity<String> request2 = new HttpEntity<>(body2, headers);
+    HttpEntity<String> request3 = new HttpEntity<>(body3, headers);
+
     ResponseEntity<UserEntity> response1 =
         testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request1, UserEntity.class);
-    assertEquals(HttpStatus.OK, response1.getStatusCode());
-
     Optional<UserEntity> userOpt = userService.getUserByEmail("newemail@test.com");
-    assertTrue(userOpt.isPresent());
-
     ResponseEntity<UserEntity> response2 =
         testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request2, UserEntity.class);
-    assertEquals(HttpStatus.OK, response2.getStatusCode());
+    ResponseEntity<UserEntity> response3 =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request3, UserEntity.class);
+    Optional<UserEntity> user2Opt = userService.getUserByUsername("new_username");
 
-    UserEntity user2 = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-    assertEquals("new_username", user2.getUsername());
+    assertEquals(HttpStatus.OK, response1.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    assertEquals(HttpStatus.OK, response3.getStatusCode());
+    assertTrue(userOpt.isPresent());
+    assertTrue(user2Opt.isPresent());
 
-    userService.deleteUser(user2);
+    userService.deleteUser(user2Opt.get());
   }
 
   @DisplayName("DELETE /account")
