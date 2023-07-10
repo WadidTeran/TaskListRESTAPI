@@ -38,7 +38,7 @@ class ReportControllerTest {
     HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
     HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-    LocalDate future = LocalDate.now().plusYears(1);
+    LocalDate future = LocalDate.now().plusYears(10);
     LocalDate past = LocalDate.now().minusYears(1);
 
     ResponseEntity<?> responseA =
@@ -55,8 +55,16 @@ class ReportControllerTest {
             request,
             new ParameterizedTypeReference<>() {});
 
+    ResponseEntity<?> responseC =
+        testRestTemplate.exchange(
+            BASE_URL + String.format("?from=%s&to=%s", future, future.plusYears(1)),
+            HttpMethod.GET,
+            request,
+            new ParameterizedTypeReference<>() {});
+
     assertEquals(HttpStatus.OK, responseA.getStatusCode());
     assertEquals(HttpStatus.BAD_REQUEST, responseB.getStatusCode());
+    assertEquals(HttpStatus.OK, responseC.getStatusCode());
 
     testHelper.deleteTestUser();
   }

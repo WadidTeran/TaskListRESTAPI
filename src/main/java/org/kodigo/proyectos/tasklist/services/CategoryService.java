@@ -7,7 +7,6 @@ import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
