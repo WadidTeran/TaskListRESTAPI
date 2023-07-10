@@ -37,10 +37,10 @@ public class TaskController {
       @Parameter(description = "Task relevance query param: {none, low, medium, high}")
           @RequestParam(required = false)
           String rel,
-      @Parameter(description = "Task category name query param") @RequestParam(required = false)
-          String category) {
+      @Parameter(description = "Task category id query param") @RequestParam(required = false)
+          Long categoryId) {
     UserEntity user = controllerUtils.getUserEntityFromHeaders(headers);
-    Optional<List<Task>> optTaskList = taskService.getTaskList(user, status, due, rel, category);
+    Optional<List<Task>> optTaskList = taskService.getTaskList(user, status, due, rel, categoryId);
     if (optTaskList.isPresent()) {
       List<Task> tasks = optTaskList.get();
       return tasks.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(tasks);

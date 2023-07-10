@@ -23,6 +23,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,7 +49,35 @@ class TaskControllerTest {
 
   @DisplayName("GET /tasks")
   @Test
-  void getTaskList() {}
+  void getTaskList() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+    ResponseEntity<List<Task>> responseAllCompleted =
+        testRestTemplate.exchange(
+            BASE_URL + "?status=completed",
+            HttpMethod.GET,
+            request,
+            new ParameterizedTypeReference<>() {});
+
+    assertEquals(HttpStatus.OK, responseAllCompleted.getStatusCode());
+    assertEquals(8, responseAllCompleted.getBody().size());
+
+    ResponseEntity<List<Task>> responseAllPending =
+        testRestTemplate.exchange(
+            BASE_URL + "?status=pending",
+            HttpMethod.GET,
+            request,
+            new ParameterizedTypeReference<>() {});
+
+    assertEquals(HttpStatus.OK, responseAllPending.getStatusCode());
+    assertEquals(12, responseAllPending.getBody().size());
+
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("POST /tasks")
   @Test

@@ -75,19 +75,19 @@ public class TaskService {
   }
 
   public Optional<List<Task>> getTaskList(
-      UserEntity user, String status, String due, String rel, String category) {
-    if (!validateParams(user, status, due, rel, category)) return Optional.empty();
+      UserEntity user, String status, String due, String rel, Long categoryId) {
+    if (!validateParams(user, status, due, rel, categoryId)) return Optional.empty();
 
     String[] params =
         new String[] {
           status,
           due,
           (rel == null) ? null : ParamStrings.RELEVANCE.value,
-          (category == null) ? null : ParamStrings.CATEGORY.value
+          (categoryId == null) ? null : ParamStrings.CATEGORY.value
         };
     for (TaskQuery query : TaskQuery.values()) {
       if (Arrays.equals(params, query.params)) {
-        return executeTaskQuery(query, user, rel, category);
+        return executeTaskQuery(query, user, rel, categoryId);
       }
     }
 
@@ -95,12 +95,10 @@ public class TaskService {
   }
 
   private Optional<List<Task>> executeTaskQuery(
-      TaskQuery query, UserEntity user, String rel, String categoryName) {
+      TaskQuery query, UserEntity user, String rel, Long categoryId) {
     Relevance relevance = (rel != null) ? Relevance.fromValue(rel) : null;
     Category category =
-        (categoryName != null)
-            ? categoryService.getCategoryByName(user, categoryName).orElseThrow()
-            : null;
+        (categoryId != null) ? categoryRepository.findById(categoryId).orElseThrow() : null;
 
     switch (query) {
       case ALL_COMPLETED -> {
@@ -266,7 +264,7 @@ public class TaskService {
   }
 
   private boolean validateParams(
-      UserEntity user, String status, String due, String rel, String category) {
+      UserEntity user, String status, String due, String rel, Long categoryId) {
     return !((status == null
             || (!status.equals(ParamStrings.COMPLETED.value)
                 && !status.equals(ParamStrings.PENDING.value)))
@@ -279,7 +277,7 @@ public class TaskService {
             && !rel.equals(Relevance.LOW.value)
             && !rel.equals(Relevance.MEDIUM.value)
             && !rel.equals(Relevance.HIGH.value))
-        || (category != null && categoryService.notExistCategory(user, category))
+        || (categoryId != null && !categoryRepository.existsById(categoryId))
         || (status.equals(ParamStrings.COMPLETED.toString()))
             && due != null
             && due.equals(ParamStrings.FUTURE.value));
