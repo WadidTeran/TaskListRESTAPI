@@ -1,6 +1,7 @@
 package org.kodigo.proyectos.tasklist.controllers;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.entities.Category;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
@@ -35,12 +36,15 @@ class CategoryControllerTest {
     testRestTemplate = new TestRestTemplate(restTemplateBuilder);
   }
 
+  @DisplayName("GET /categories")
   @Test
   void getCategories() {}
 
+  @DisplayName("POST /categories")
   @Test
   void createCategory() {}
 
+  @DisplayName("PUT /categories")
   @Test
   void modifyCategory() {
     testHelper.registerTestUser(testRestTemplate);
@@ -49,20 +53,21 @@ class CategoryControllerTest {
     testHelper.createTestData();
 
     UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-    Category category = categoryService.getCategoryByName(userEntity,"Test category 1").orElseThrow();
+    Category category =
+        categoryService.getCategoryByName(userEntity, "Test category 1").orElseThrow();
 
     String body1 =
-            String.format(
-                    "{\"categoryId\": \"%d\",\"name\": \"%s\"}",
-                    category.getCategoryId(),
-                    "Test category changed");
+        String.format(
+            "{\"categoryId\": \"%d\",\"name\": \"%s\"}",
+            category.getCategoryId(), "Test category changed");
 
     HttpEntity<String> request1 = new HttpEntity<>(body1, headers);
     ResponseEntity<Category> response1 =
-            testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request1, Category.class);
+        testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request1, Category.class);
     assertEquals(HttpStatus.OK, response1.getStatusCode());
 
-    Optional<Category> categoryOpt = categoryService.getCategoryByName(userEntity,"Test category changed");
+    Optional<Category> categoryOpt =
+        categoryService.getCategoryByName(userEntity, "Test category changed");
     assertTrue(categoryOpt.isPresent());
 
     testHelper.deleteTestUser();
@@ -89,6 +94,7 @@ class CategoryControllerTest {
     testHelper.deleteTestUser();
   }
 
+  @DisplayName("GET /categories/{categoryId}")
   @Test
   void getCategoryById() {
     testHelper.registerTestUser(testRestTemplate);
@@ -105,11 +111,35 @@ class CategoryControllerTest {
         testRestTemplate.exchange(
             BASE_URL.concat(String.format("/%d", id)), HttpMethod.GET, request, Category.class);
 
+    assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(categoryToSearch.getName(), response.getBody().getName());
 
     testHelper.deleteTestUser();
   }
 
+  @DisplayName("DELETE /categories/{categoryId}")
   @Test
-  void deleteCategory() {}
+  void deleteCategory() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+
+    UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
+    Category categoryToDelete =
+        categoryService.getCategoryByName(userEntity, "Test category 2").orElseThrow();
+    Long id = categoryToDelete.getCategoryId();
+
+    ResponseEntity<Category> response =
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Category.class);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+
+    Optional<Category> deletedCategory =
+        categoryService.getCategoryByName(userEntity, "Test category 2");
+
+    assertTrue(deletedCategory.isEmpty());
+    testHelper.deleteTestUser();
+  }
 }
