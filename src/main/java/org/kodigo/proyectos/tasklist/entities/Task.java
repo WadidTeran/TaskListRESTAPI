@@ -50,6 +50,7 @@ public class Task {
   @JoinColumn(name = "category_id")
   private Category category;
 
+  @NotNull
   @Enumerated(EnumType.STRING)
   private Relevance relevance;
 
@@ -71,7 +72,7 @@ public class Task {
       @NotNull String name,
       String description,
       Category category,
-      Relevance relevance,
+      @NotNull Relevance relevance,
       LocalDate dueDate,
       LocalTime specifiedTime,
       RepeatConfig repeatConfig) {

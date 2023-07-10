@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
+import org.kodigo.proyectos.tasklist.security.jwt.utils.TestUser;
 import org.kodigo.proyectos.tasklist.services.UserService;
+import org.kodigo.proyectos.tasklist.testutils.TestHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -25,6 +27,7 @@ class UserControllerTest {
   @Autowired private RestTemplateBuilder restTemplateBuilder;
   @Autowired private UserService userService;
   @LocalServerPort private int port;
+  @Autowired private TestHelper testHelper;
 
   @BeforeEach
   void setUp() {
@@ -42,7 +45,18 @@ class UserControllerTest {
 
   @DisplayName("DELETE /account")
   @Test
-  void deleteAccount() {}
+  void deleteAccount() {
+    testHelper.registerTestUser(testRestTemplate);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<UserEntity> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.DELETE, request, UserEntity.class);
+
+    Optional<UserEntity> userEntity = userService.getUserByEmail(TestUser.EMAIL.value);
+
+    assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
+    assertTrue(userEntity.isEmpty());
+  }
 
   @DisplayName("POST /register")
   @Test

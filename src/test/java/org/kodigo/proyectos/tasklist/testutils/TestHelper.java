@@ -300,4 +300,12 @@ public class TestHelper {
   public void deleteTestUser() {
     userRepository.findByUsername(TestUser.USERNAME.value).ifPresent(userRepository::delete);
   }
+
+  public HttpHeaders getHeadersWithAuthenticationForTestUser(TestRestTemplate testRestTemplate) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_JSON);
+    headers.setAccept(List.of(MediaType.APPLICATION_JSON));
+    headers.set("Authorization", "Bearer ".concat(getJWTForTestUser(testRestTemplate)));
+    return headers;
+  }
 }
