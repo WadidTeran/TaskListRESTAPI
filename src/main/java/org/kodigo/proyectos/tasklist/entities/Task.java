@@ -33,7 +33,6 @@ public class Task {
   @Column(name = "task_id")
   private Long taskId;
 
-  @JsonIgnore
   @ManyToOne
   @JoinColumn(name = "user_id", nullable = false)
   private UserEntity user;
