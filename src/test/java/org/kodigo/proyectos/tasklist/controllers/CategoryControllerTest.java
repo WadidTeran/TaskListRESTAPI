@@ -13,10 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
+
+import java.lang.reflect.Type;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,10 +38,31 @@ class CategoryControllerTest {
   }
 
   @Test
-  void getCategories() {}
+  void getCategories() {
+  }
 
   @Test
-  void createCategory() {}
+  void createCategory() {
+    testHelper.registerTestUser(testRestTemplate);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+
+    String body =
+        String.format("{\"categoryId\": \"%d\",\"name\": \"%s\"}", 3, "category to create");
+    String body2 =
+        String.format("{\"categoryId\": \"%d\",\"name\": \"%s\"}", 4, "category to create");
+    HttpEntity<String> request = new HttpEntity<>(body, headers);
+    HttpEntity<String> request2 = new HttpEntity<>(body2, headers);
+    ResponseEntity<Category> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Category.class);
+    ResponseEntity<Category> response2 =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Category.class);
+    Category category = response.getBody();
+    Category category2 = response2.getBody();
+
+    assertEquals(HttpStatus.CREATED, response.getStatusCode());
+    assertEquals(HttpStatus.BAD_REQUEST, response2.getStatusCode());
+    testHelper.deleteTestUser();
+  }
 
   @Test
   void modifyCategory() {}
