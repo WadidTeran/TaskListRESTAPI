@@ -37,7 +37,20 @@ class UserControllerTest {
 
   @DisplayName("GET /account")
   @Test
-  void getUserEntity() {}
+  void getUserEntity() {
+    testHelper.registerTestUser(testRestTemplate);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<UserEntity> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.GET, request, UserEntity.class);
+
+    UserEntity userEntity = response.getBody();
+
+    assertEquals(HttpStatus.OK, response.getStatusCode());
+    assertEquals(TestUser.EMAIL.value, userEntity.getEmail());
+    assertEquals(TestUser.USERNAME.value, userEntity.getUsername());
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("PATCH /account")
   @Test
