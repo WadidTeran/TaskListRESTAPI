@@ -3,8 +3,6 @@ package org.kodigo.proyectos.tasklist.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.validator.constraints.Length;
@@ -15,8 +13,6 @@ import java.util.List;
 @Table(name = "users")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class UserEntity {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,21 +45,4 @@ public class UserEntity {
   @JsonIgnore
   @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   private List<Task> tasks;
-
-  @Override
-  public String toString() {
-    return "UserEntity{"
-        + "userId="
-        + userId
-        + ", username='"
-        + username
-        + '\''
-        + ", email='"
-        + email
-        + '\''
-        + ", password='"
-        + password
-        + '\''
-        + '}';
-  }
 }

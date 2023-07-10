@@ -2,7 +2,6 @@ package org.kodigo.proyectos.tasklist.services;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -12,7 +11,6 @@ import java.io.File;
 import java.nio.file.Files;
 
 @Service
-@Slf4j
 public class EmailSenderService {
 
   private final String senderEmail;
@@ -36,7 +34,6 @@ public class EmailSenderService {
       javaMailSender.send(message);
       return true;
     } catch (Exception e) {
-      log.error(e.getMessage());
       return false;
     }
   }

@@ -1,9 +1,6 @@
 package org.kodigo.proyectos.tasklist.testutils;
 
-import org.kodigo.proyectos.tasklist.entities.Category;
-import org.kodigo.proyectos.tasklist.entities.Relevance;
-import org.kodigo.proyectos.tasklist.entities.Task;
-import org.kodigo.proyectos.tasklist.entities.UserEntity;
+import org.kodigo.proyectos.tasklist.entities.*;
 import org.kodigo.proyectos.tasklist.repositories.CategoryRepository;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.services.UserService;
@@ -45,6 +42,14 @@ public class TestHelper {
     category1 = categoryRepository.save(category1);
     category2 = categoryRepository.save(category2);
 
+    RepeatConfig repeatConfig1 =
+        new RepeatConfig(RepeatType.HOUR, 8, LocalDate.now().plusMonths(1));
+    RepeatConfig repeatConfig2 = new RepeatConfig(RepeatType.DAILY, 3, null);
+    RepeatConfig repeatConfig3 = new RepeatConfig(RepeatType.WEEKLY, 2, null);
+    RepeatConfig repeatConfig4 = new RepeatConfig(RepeatType.MONTHLY, 6, null);
+    RepeatConfig repeatConfig5 =
+        new RepeatConfig(RepeatType.YEARLY, 4, LocalDate.now().plusYears(40));
+
     Task task1 =
         new Task(
             user,
@@ -54,7 +59,7 @@ public class TestHelper {
             Relevance.NONE,
             LocalDate.now().plusMonths(1),
             null,
-            null);
+            repeatConfig2);
     Task task2 =
         new Task(
             user,
@@ -74,7 +79,7 @@ public class TestHelper {
             Relevance.MEDIUM,
             LocalDate.now().plusMonths(3),
             null,
-            null);
+            repeatConfig3);
     Task task4 =
         new Task(
             user,
@@ -94,7 +99,7 @@ public class TestHelper {
             Relevance.NONE,
             LocalDate.now().minusMonths(4),
             null,
-            null);
+            repeatConfig4);
     Task task6 =
         new Task(
             user,
@@ -134,7 +139,7 @@ public class TestHelper {
             Relevance.NONE,
             LocalDate.now(),
             null,
-            null);
+            repeatConfig1);
     Task task10 =
         new Task(
             user,
@@ -164,7 +169,7 @@ public class TestHelper {
             Relevance.HIGH,
             LocalDate.now(),
             null,
-            null);
+            repeatConfig5);
 
     Task task13 =
         new Task(
