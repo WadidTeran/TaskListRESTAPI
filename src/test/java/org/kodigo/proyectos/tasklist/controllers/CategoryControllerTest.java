@@ -13,10 +13,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,7 +42,31 @@ class CategoryControllerTest {
   void createCategory() {}
 
   @Test
-  void modifyCategory() {}
+  void modifyCategory() {
+    testHelper.registerTestUser(testRestTemplate);
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+
+    testHelper.createTestData();
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Category category = categoryService.getCategoryByName(userEntity,"Test category 1").orElseThrow();
+
+    String body1 =
+            String.format(
+                    "{\"categoryId\": \"%d\",\"name\": \"%s\"}",
+                    category.getCategoryId(),
+                    "Test category changed");
+
+    HttpEntity<String> request1 = new HttpEntity<>(body1, headers);
+    ResponseEntity<Category> response1 =
+            testRestTemplate.exchange(BASE_URL, HttpMethod.PUT, request1, Category.class);
+    assertEquals(HttpStatus.OK, response1.getStatusCode());
+
+    Optional<Category> categoryOpt = categoryService.getCategoryByName(userEntity,"Test category changed");
+    assertTrue(categoryOpt.isPresent());
+
+    testHelper.deleteTestUser();
+  }
 
   @Test
   void deleteCategories() {}
