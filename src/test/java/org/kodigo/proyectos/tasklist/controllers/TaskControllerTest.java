@@ -75,7 +75,7 @@ class TaskControllerTest {
 
     UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
-    Long id = 1L;
+    Long id = userEntity.getTasks().get(0).getTaskId();
 
     Task task = taskService.findByUserAndTaskId(userEntity, id).orElseThrow();
 
