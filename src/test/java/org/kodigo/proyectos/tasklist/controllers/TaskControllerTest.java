@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -78,7 +79,22 @@ class TaskControllerTest {
 
   @DisplayName("DELETE /tasks")
   @Test
-  void deleteTasks() {}
+  void deleteTasks() {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(null, headers);
+    ResponseEntity<?> responseNoContent =
+        testRestTemplate.exchange(
+            BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {});
+    ResponseEntity<?> responseNotFound =
+        testRestTemplate.exchange(
+            BASE_URL, HttpMethod.DELETE, request, new ParameterizedTypeReference<>() {});
+
+    assertEquals(HttpStatus.NO_CONTENT, responseNoContent.getStatusCode());
+    assertEquals(HttpStatus.NOT_FOUND, responseNotFound.getStatusCode());
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("GET /tasks/{taskId}")
   @Test
@@ -89,16 +105,19 @@ class TaskControllerTest {
     HttpEntity<String> request = new HttpEntity<>(null, headers);
 
     UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-
+    Long id = userEntity.getTasks().get(0).getTaskId();
     ResponseEntity<Task> response =
         testRestTemplate.exchange(
-            BASE_URL.concat(String.format("/%d", 3L)), HttpMethod.GET, request, Task.class);
+            BASE_URL.concat(String.format("/%d", id)), HttpMethod.GET, request, Task.class);
     ResponseEntity<Task> response2 =
         testRestTemplate.exchange(
             BASE_URL.concat(String.format("/%d", -1L)), HttpMethod.GET, request, Task.class);
 
+    Task responseTask = response.getBody();
+
     assertEquals(HttpStatus.OK, response.getStatusCode());
     assertEquals(HttpStatus.NOT_FOUND, response2.getStatusCode());
+    assertEquals(responseTask.getTaskId(), id);
 
     testHelper.deleteTestUser();
   }
