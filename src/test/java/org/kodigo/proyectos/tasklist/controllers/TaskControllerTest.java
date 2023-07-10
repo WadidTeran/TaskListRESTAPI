@@ -6,11 +6,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.kodigo.proyectos.tasklist.entities.Category;
-import org.kodigo.proyectos.tasklist.entities.Relevance;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
-import org.kodigo.proyectos.tasklist.services.CategoryService;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
 import org.kodigo.proyectos.tasklist.services.TaskService;
 import org.kodigo.proyectos.tasklist.services.UserService;
@@ -22,7 +19,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
-import java.time.LocalDate;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,7 +33,6 @@ class TaskControllerTest {
   @Autowired private TaskRepository taskRepository;
   @LocalServerPort private int port;
   @Autowired private TestHelper testHelper;
-  @Autowired private CategoryService categoryService;
 
   @BeforeEach
   void setUp() {
@@ -93,8 +88,6 @@ class TaskControllerTest {
     HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
     HttpEntity<String> request = new HttpEntity<>(null, headers);
 
-    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
-
     ResponseEntity<Task> response =
         testRestTemplate.exchange(
             BASE_URL.concat(String.format("/%d", 3L)), HttpMethod.GET, request, Task.class);
@@ -123,8 +116,6 @@ class TaskControllerTest {
     UserEntity userEntity = userService.getUserByUsername(TestUser.USERNAME.value).orElseThrow();
 
     Long id = userEntity.getTasks().get(0).getTaskId();
-
-    Task task = taskService.findByUserAndTaskId(userEntity, id).orElseThrow();
 
     ResponseEntity<Task> response =
             testRestTemplate.exchange(
