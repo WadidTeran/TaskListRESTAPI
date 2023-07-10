@@ -6,6 +6,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.kodigo.proyectos.tasklist.entities.Relevance;
 import org.kodigo.proyectos.tasklist.entities.Task;
 import org.kodigo.proyectos.tasklist.entities.UserEntity;
 import org.kodigo.proyectos.tasklist.repositories.TaskRepository;
@@ -19,6 +20,8 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
+
+import java.time.LocalDate;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -47,7 +50,35 @@ class TaskControllerTest {
 
   @DisplayName("POST /tasks")
   @Test
-  void createTask() {}
+  void createTask() throws JsonProcessingException {
+    testHelper.registerTestUser(testRestTemplate);
+    testHelper.createTestData();
+
+    UserEntity userEntity = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Task createdTask =
+        new Task(userEntity, "New task", null, null, Relevance.NONE, LocalDate.now(), null, null);
+    String body = objectMapper.writeValueAsString(createdTask);
+
+    HttpHeaders headers = testHelper.getHeadersWithAuthenticationForTestUser(testRestTemplate);
+    HttpEntity<String> request = new HttpEntity<>(body, headers);
+
+    ResponseEntity<Task> response =
+        testRestTemplate.exchange(BASE_URL, HttpMethod.POST, request, Task.class);
+
+    assertEquals(HttpStatus.CREATED, response.getStatusCode());
+
+    UserEntity userEntityN = userService.getUserByEmail(TestUser.EMAIL.value).orElseThrow();
+    Task createdTaskDB =
+        taskService
+            .findByUserAndTaskId(
+                userEntity,
+                userEntityN.getTasks().get(userEntityN.getTasks().size() - 1).getTaskId())
+            .orElseThrow();
+
+    assertEquals("New task", createdTaskDB.getName());
+
+    testHelper.deleteTestUser();
+  }
 
   @DisplayName("PUT /tasks")
   @Test
@@ -118,13 +149,12 @@ class TaskControllerTest {
     Long id = userEntity.getTasks().get(0).getTaskId();
 
     ResponseEntity<Task> response =
-            testRestTemplate.exchange(
-                    BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
+        testRestTemplate.exchange(
+            BASE_URL.concat(String.format("/%d", id)), HttpMethod.DELETE, request, Task.class);
 
     assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
 
-    Optional<Task> deletedTask =
-            taskService.findByUserAndTaskId(userEntity,id);
+    Optional<Task> deletedTask = taskService.findByUserAndTaskId(userEntity, id);
 
     assertTrue(deletedTask.isEmpty());
     testHelper.deleteTestUser();
