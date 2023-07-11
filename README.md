@@ -1,6 +1,8 @@
 # Task List Spring Boot REST API 🍃
 
-This project is a practice of Spring Boot, Spring Web, Spring Data, Spring Security and Testing
+This project is a practice of Spring Boot, Spring Web, Spring Data, Spring Security, and Testing
+
+![Frontend preview](https://i.imgur.com/vblw3n4.png)
 
 ## Prerequisites ✅
 
